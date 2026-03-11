@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>my_robot_arm_sm</name>
+  <version>2.3.20</version>
+  <description>Minimal SMACC2 state machine for JEARM Home/Pick/Place motions</description>
+  <maintainer email="smacc2@smacc2.cool">SMACC2 is cool</maintainer>
+  <license>Apache-2.0</license>
+  <license>MyLicense</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>libboost-thread-dev</depend>
+
+  <depend>cl_ros2_timer</depend>
+  <depend>smacc2</depend>
+  <depend>cl_moveit2z</depend>
+  <depend>my_jearm_moveit_config</depend>
+  <depend>cl_keyboard</depend>
+  <depend>my_robot_arm_cl_library</depend>
+  <depend>rclcpp</depend>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

@@ -1,0 +1,112 @@
+stateDiagram-v2
+  [*] --> IDLE
+
+  state "IDLE" as IDLE
+  state "WAIT_RESOURCES" as WAIT_RESOURCES
+  state "WORK" as WORK
+  state "BACK(回零位)" as BACK
+
+  %% 顶层：IDLE/BACK 不直接进入 WORK，统一先进入 WAIT_RESOURCES
+  IDLE --> WAIT_RESOURCES : ev_start_work
+  BACK --> WAIT_RESOURCES : ev_back_done
+
+  %% 资源判定事件（黑板变量 pcb_present / left_slot_free / right_slot_free）
+  %% 黑板更新：在 WAIT_RESOURCES / WORK / BACK 状态下持续运行
+  WAIT_RESOURCES --> WORK : ev_can_work
+
+  %% WORK 循环：PLACE 完成时重新判定，满足条件直接重新开始
+  WORK --> WORK : ev_can_work
+
+  %% Waiting 超时才回 IDLE
+  WAIT_RESOURCES --> IDLE : ev_wait_timeout
+
+  %% WAIT_RESOURCES 可恢复异常进入 PAUSE
+  WAIT_RESOURCES --> PAUSE : ev_pause_requested
+
+  %% Leave WORK conditions（资源不足直接退出；可恢复异常/故障进入 PAUSE）
+  WORK --> BACK : ev_resources_unavailable
+  WORK --> PAUSE : ev_pause_requested
+
+  %% BACK 可恢复异常进入 PAUSE
+  BACK --> PAUSE : ev_pause_requested
+
+  %% ========================================
+  %% PAUSE 状态定义（放在最后以优化布局）
+  %% ========================================
+  state "PAUSE(人工恢复)" as PAUSE
+
+  %% PAUSE 手动恢复策略
+  %% ev_key_resume 由键盘监听触发，恢复管理器根据黑板 resume_state_id 决定：
+  %%   - resume_state_id=WAIT_RESOURCES -> WAIT_RESOURCES
+  %%   - resume_state_id=WORK -> WORK
+  PAUSE --> WAIT_RESOURCES : ev_key_resume
+  PAUSE --> WORK : ev_key_resume
+  PAUSE --> BACK : ev_fault_to_back
+  PAUSE --> BACK : ev_key_back
+
+  %% WORK hierarchical states
+  state WORK {
+    [*] --> PICK
+    
+    state "PICK" as PICK {
+      [*] --> L_PREGRASP
+      L_PREGRASP --> GRIPPER_OPEN : ev_at_pregrasp
+      GRIPPER_OPEN --> CARTESIAN_DOWN : ev_gripper_opened
+      CARTESIAN_DOWN --> GRIPPER_CLOSE : ev_at_grasp_depth
+      GRIPPER_CLOSE --> CARTESIAN_UP : ev_gripper_closed
+      CARTESIAN_UP --> L_RETREAT : ev_lifted
+      L_RETREAT --> [*] : ev_pick_done
+    }
+
+    PICK --> INSPECT : ev_pick_done
+    
+    state "INSPECT(双臂交接拍照)" as INSPECT {
+      [*] --> L_GO_CAMERA_BACK
+      L_GO_CAMERA_BACK --> L_TAKE_BACK_PHOTO : ev_l_at_back_cam_pose
+      L_TAKE_BACK_PHOTO --> L_TO_HANDOVER_POSE : ev_back_photo_done
+      L_TO_HANDOVER_POSE --> HANDOVER_L_TO_R : ev_l_ready_handover
+      HANDOVER_L_TO_R --> R_GO_CAMERA_FRONT : ev_handover_done
+      R_GO_CAMERA_FRONT --> R_TAKE_FRONT_PHOTO : ev_r_at_front_cam_pose
+      R_TAKE_FRONT_PHOTO --> R_TO_HANDOVER_POSE : ev_front_photo_done
+      R_TO_HANDOVER_POSE --> HANDOVER_R_TO_L : ev_r_ready_handover
+      HANDOVER_R_TO_L --> [*] : ev_inspect_done
+    }
+    
+    INSPECT --> SELECT_BIN : ev_inspect_done
+    
+    state "SELECT_BIN" as SELECT_BIN {
+      [*] --> CHECK_SLOTS
+      CHECK_SLOTS --> DECIDE_BIN : ev_slots_status_ready
+      DECIDE_BIN --> SET_OK_TARGET : ev_route_ok_bin
+      DECIDE_BIN --> SET_NG_TARGET : ev_route_ng_bin
+      DECIDE_BIN --> [*] : ev_no_slot_abort
+      DECIDE_BIN --> [*] : ev_pause_requested
+      SET_OK_TARGET --> [*] : ev_bin_selected
+      SET_NG_TARGET --> [*] : ev_bin_selected
+    }
+    
+    SELECT_BIN --> PLACE : ev_bin_selected
+    
+    state "PLACE" as PLACE {
+      [*] --> L_PREPLACE
+      L_PREPLACE --> CARTESIAN_DOWN_P : ev_at_preplace
+      CARTESIAN_DOWN_P --> GRIPPER_OPEN_P : ev_at_place_depth
+      GRIPPER_OPEN_P --> CARTESIAN_UP_P : ev_gripper_opened
+      CARTESIAN_UP_P --> L_RETREAT_P : ev_cleared
+      L_RETREAT_P --> [*] : ev_place_done
+    }
+    
+    %% PLACE 完成后触发资源判定（不直接结束）
+    %% 在 PLACE 的 onExit 中：
+    %%   - 评估黑板变量
+    %%   - 满足条件 → postEvent<ev_can_work>()，触发 WORK --> WORK 循环
+    %%   - 不满足 → postEvent<ev_resources_unavailable>()，触发 WORK --> BACK
+    PLACE --> [*] : ev_place_done
+
+    %% 子状态可恢复异常/故障统一进入 PAUSE
+    PICK --> [*] : ev_pause_requested
+    INSPECT --> [*] : ev_pause_requested
+    SELECT_BIN --> [*] : ev_pause_requested
+    PLACE --> [*] : ev_pause_requested
+  }
+
