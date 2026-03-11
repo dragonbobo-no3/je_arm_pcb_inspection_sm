@@ -1,5 +1,5 @@
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, SetEnvironmentVariable, TimerAction
+from launch.actions import ExecuteProcess, IncludeLaunchDescription, SetEnvironmentVariable, TimerAction
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import EnvironmentVariable
 from launch_ros.actions import Node
@@ -68,6 +68,28 @@ def generate_launch_description():
         output="screen",
     )
 
+    # Keyboard server - 使用独立终端提供真实TTY，向 /keyboard_unicode 发布按键
+    keyboard_server = ExecuteProcess(
+        cmd=[
+            "gnome-terminal",
+            "--",
+            "bash",
+            "-lc",
+            (
+                "unset PYTHONPATH PYTHONHOME CONDA_PREFIX CONDA_DEFAULT_ENV CONDA_PROMPT_MODIFIER CONDA_SHLVL && "
+                "export PATH=/usr/bin:/bin:/usr/sbin:/sbin:$PATH && "
+                "source /opt/ros/humble/setup.bash && "
+                "source /home/agx/ros2_ws/install/setup.bash && "
+                "echo 'SMACC2 keyboard ready: use s/p/r/b/f/u in this window' && "
+                "/usr/bin/python3 /home/agx/ros2_ws/install/cl_keyboard/lib/cl_keyboard/keyboard_server_node.py; "
+                "echo; echo 'keyboard_server_node exited'; "
+                "read -r -n 1 -s -p 'Press any key to close...'"
+            ),
+        ],
+        output="screen",
+        shell=False,
+    )
+
     # 状态机节点 - 延迟8秒启动，给move_group和controller时间初始化
     sm_node = TimerAction(
         period=8.0,
@@ -90,6 +112,7 @@ def generate_launch_description():
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(moveit_launch),
             ),
+            keyboard_server,
             fake_executor,
             sm_node,
         ]

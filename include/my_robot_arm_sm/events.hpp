@@ -35,4 +35,9 @@ struct EvKeyBack : sc::event<EvKeyBack> {};
 // PAUSE -> BACK
 struct EvFaultToBack : sc::event<EvFaultToBack> {};
 
+// PAUSE 恢复路由中间事件
+struct EvResumeToWaitResources : sc::event<EvResumeToWaitResources> {};
+struct EvResumeToWork : sc::event<EvResumeToWork> {};
+struct EvResumeToBack : sc::event<EvResumeToBack> {};
+
 }  // namespace my_robot_arm_sm

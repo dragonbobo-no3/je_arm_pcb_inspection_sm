@@ -34,13 +34,17 @@ stateDiagram-v2
   %% PAUSE 状态定义（放在最后以优化布局）
   %% ========================================
   state "PAUSE(人工恢复)" as PAUSE
+  state "PAUSE_RESUME_ROUTER(恢复路由)" as PAUSE_RESUME_ROUTER
 
   %% PAUSE 手动恢复策略
   %% ev_key_resume 由键盘监听触发，恢复管理器根据黑板 resume_state_id 决定：
   %%   - resume_state_id=WAIT_RESOURCES -> WAIT_RESOURCES
   %%   - resume_state_id=WORK -> WORK
-  PAUSE --> WAIT_RESOURCES : ev_key_resume
-  PAUSE --> WORK : ev_key_resume
+  %%   - resume_state_id=BACK -> BACK
+  PAUSE --> PAUSE_RESUME_ROUTER : ev_key_resume
+  PAUSE_RESUME_ROUTER --> WAIT_RESOURCES : ev_resume_to_wait_resources
+  PAUSE_RESUME_ROUTER --> WORK : ev_resume_to_work
+  PAUSE_RESUME_ROUTER --> BACK : ev_resume_to_back
   PAUSE --> BACK : ev_fault_to_back
   PAUSE --> BACK : ev_key_back
 

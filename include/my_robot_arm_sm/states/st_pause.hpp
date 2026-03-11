@@ -2,6 +2,7 @@
 
 #include <smacc2/smacc.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include "my_robot_arm_sm/sm_data.hpp"
 
 namespace my_robot_arm_sm
 {
@@ -9,9 +10,8 @@ namespace my_robot_arm_sm
 struct SmMyRobotArm;
 
 // 前向声明
-struct StWaitResources;
-struct StWork;
 struct StBack;
+struct StPauseResumeRouter;
 
 /// PAUSE 状态：人工恢复
 /// 故障、可恢复异常的集中处理，等待操作员手动指令
@@ -20,17 +20,20 @@ struct StPause : smacc2::SmaccState<StPause, SmMyRobotArm>
   using SmaccState::SmaccState;
 
   typedef boost::mpl::list<
-    smacc2::Transition<EvKeyResume, StWaitResources>,
-    smacc2::Transition<EvKeyResume, StWork>,
     smacc2::Transition<EvFaultToBack, StBack>,
-    smacc2::Transition<EvKeyBack, StBack>
+    smacc2::Transition<EvKeyBack, StBack>,
+    smacc2::Transition<EvKeyResume, StPauseResumeRouter>
   > reactions;
 
   void onEntry() 
   { 
-    RCLCPP_WARN(getLogger(), "StPause::onEntry - Waiting for manual intervention"); 
-    // TODO: 高亮LED/蜂鸣器，等待操作员指令
-    // TODO: 根据黑板变量 resume_state_id 决定 EvKeyResume 转移到哪个状态
+    std::string resumeState = sm_data::kWaitResourcesState;
+    this->getGlobalSMData(std::string(sm_data::kResumeStateId), resumeState);
+
+    RCLCPP_WARN(
+      getLogger(),
+      "StPause::onEntry - waiting manual intervention (debug keys handled by keyboard mapper), resume target=%s",
+      resumeState.c_str()); 
   }
 
   void onExit() 

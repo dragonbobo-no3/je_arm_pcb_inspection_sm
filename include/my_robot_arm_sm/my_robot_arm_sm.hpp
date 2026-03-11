@@ -28,12 +28,15 @@
 #include <cl_keyboard/cl_keyboard.hpp>
 #include <cl_keyboard/client_behaviors/cb_default_keyboard_behavior.hpp>
 #include <smacc2/client_behaviors/cb_wait_topic_message.hpp>
+#include <smacc2/smacc_updatable.hpp>
 
 // EVENTS (must be after smacc2/smacc.hpp)
 #include "my_robot_arm_sm/events.hpp"
+#include "my_robot_arm_sm/sm_data.hpp"
 
 using namespace cl_moveit2z;
 using namespace cl_keyboard;
+using namespace smacc2::default_events;
 
 namespace my_robot_arm_sm
 {
@@ -51,6 +54,14 @@ struct SmMyRobotArm : public smacc2::SmaccStateMachineBase<SmMyRobotArm, StIdle>
 
   void onInitialize() override 
   { 
+    this->setGlobalSMData(std::string(sm_data::kResumeStateId), std::string(sm_data::kWaitResourcesState));
+    this->setGlobalSMData(std::string(sm_data::kPcbPresent), true);
+    this->setGlobalSMData(std::string(sm_data::kLeftSlotFree), true);
+    this->setGlobalSMData(std::string(sm_data::kRightSlotFree), true);
+    this->setGlobalSMData(std::string(sm_data::kWaitTimeoutSec), 10.0);
+    this->setGlobalSMData(std::string(sm_data::kWorkCycleSec), 2.0);
+    this->setGlobalSMData(std::string(sm_data::kBackHomeSec), 1.5);
+
     this->createOrthogonal<OrArm>(); 
     this->createOrthogonal<OrKeyboard>();
   }
@@ -66,4 +77,5 @@ struct SmMyRobotArm : public smacc2::SmaccStateMachineBase<SmMyRobotArm, StIdle>
 #include "states/st_wait_resources.hpp"
 #include "states/st_work.hpp"
 #include "states/st_back.hpp"
+#include "states/st_pause_resume_router.hpp"
 #include "states/st_pause.hpp"

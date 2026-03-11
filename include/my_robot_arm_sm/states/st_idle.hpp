@@ -28,7 +28,7 @@ struct StIdle : smacc2::SmaccState<StIdle, SmMyRobotArm>
 
   void onEntry() 
   { 
-    RCLCPP_WARN(getLogger(), "StIdle::onEntry"); 
+    RCLCPP_WARN(getLogger(), "StIdle::onEntry - debug key: s => EvStartWork"); 
   }
 
   void onExit() 

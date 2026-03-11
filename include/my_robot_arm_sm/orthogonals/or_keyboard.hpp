@@ -24,6 +24,8 @@
 #include <cl_keyboard/cl_keyboard.hpp>
 #include <smacc2/smacc.hpp>
 
+#include "my_robot_arm_sm/components/cp_business_key_mapper.hpp"
+
 namespace my_robot_arm_sm {
 using namespace std::chrono_literals;
 
@@ -31,6 +33,7 @@ class OrKeyboard : public smacc2::Orthogonal<OrKeyboard> {
 public:
   void onInitialize() override {
     auto keyboardClient = this->createClient<cl_keyboard::ClKeyboard>();
+    keyboardClient->createComponent<my_robot_arm_sm::CpBusinessKeyMapper>();
   }
 };
 } // namespace my_robot_arm_sm
