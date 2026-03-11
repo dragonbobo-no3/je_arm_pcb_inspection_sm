@@ -4,6 +4,7 @@
 
 #include <smacc2/smacc.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include "my_robot_arm_sm/components/cp_top_level_flow.hpp"
 #include "my_robot_arm_sm/sm_data.hpp"
 
 namespace my_robot_arm_sm
@@ -29,9 +30,10 @@ struct StBack : smacc2::SmaccState<StBack, SmMyRobotArm>
 
   void onEntry() 
   { 
+    this->requiresComponent(flow_);
     enteredTime_ = std::chrono::steady_clock::now();
     transitionPosted_ = false;
-    this->setGlobalSMData(std::string(sm_data::kResumeStateId), std::string(sm_data::kBackState));
+    flow_->setResumeTarget(sm_data::kBackState);
     RCLCPP_WARN(getLogger(), "StBack::onEntry - homing arm (debug keys handled by keyboard mapper)"); 
   }
 
@@ -44,7 +46,7 @@ struct StBack : smacc2::SmaccState<StBack, SmMyRobotArm>
 
     const auto elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
       std::chrono::steady_clock::now() - enteredTime_);
-    if (elapsed.count() >= getBackSeconds())
+    if (elapsed.count() >= flow_->backHomeSeconds())
     {
       transitionPosted_ = true;
       RCLCPP_INFO(getLogger(), "Back motion complete -> posting EvBackDone");
@@ -58,13 +60,7 @@ struct StBack : smacc2::SmaccState<StBack, SmMyRobotArm>
   }
 
 private:
-  double getBackSeconds()
-  {
-    double backSec = 1.5;
-    this->getGlobalSMData(std::string(sm_data::kBackHomeSec), backSec);
-    return backSec;
-  }
-
+  CpTopLevelFlow * flow_;
   std::chrono::steady_clock::time_point enteredTime_;
   bool transitionPosted_{false};
 };

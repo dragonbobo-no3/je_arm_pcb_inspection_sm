@@ -25,6 +25,7 @@
 #include <smacc2/smacc.hpp>
 
 #include "my_robot_arm_sm/components/cp_business_key_mapper.hpp"
+#include "my_robot_arm_sm/components/cp_top_level_flow.hpp"
 
 namespace my_robot_arm_sm {
 using namespace std::chrono_literals;
@@ -34,6 +35,7 @@ public:
   void onInitialize() override {
     auto keyboardClient = this->createClient<cl_keyboard::ClKeyboard>();
     keyboardClient->createComponent<my_robot_arm_sm::CpBusinessKeyMapper>();
+    keyboardClient->createComponent<my_robot_arm_sm::CpTopLevelFlow>();
   }
 };
 } // namespace my_robot_arm_sm

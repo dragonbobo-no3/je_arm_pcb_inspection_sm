@@ -4,6 +4,7 @@
 
 #include <smacc2/smacc.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include "my_robot_arm_sm/components/cp_top_level_flow.hpp"
 #include "my_robot_arm_sm/sm_data.hpp"
 
 namespace my_robot_arm_sm
@@ -30,9 +31,10 @@ struct StWork : smacc2::SmaccState<StWork, SmMyRobotArm>
 
   void onEntry() 
   { 
+    this->requiresComponent(flow_);
     enteredTime_ = std::chrono::steady_clock::now();
     transitionPosted_ = false;
-    this->setGlobalSMData(std::string(sm_data::kResumeStateId), std::string(sm_data::kWorkState));
+    flow_->setResumeTarget(sm_data::kWorkState);
     RCLCPP_WARN(
       getLogger(),
       "StWork::onEntry - top-level work loop (debug keys handled by keyboard mapper)"); 
@@ -47,13 +49,13 @@ struct StWork : smacc2::SmaccState<StWork, SmMyRobotArm>
 
     const auto elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
       std::chrono::steady_clock::now() - enteredTime_);
-    if (elapsed.count() < getCycleSeconds())
+    if (elapsed.count() < flow_->workCycleSeconds())
     {
       return;
     }
 
     transitionPosted_ = true;
-    if (isWorkReady())
+    if (flow_->isWorkReady())
     {
       RCLCPP_INFO(getLogger(), "Simulated work cycle done -> posting EvCanWork");
       this->template postEvent<EvCanWork>();
@@ -71,28 +73,7 @@ struct StWork : smacc2::SmaccState<StWork, SmMyRobotArm>
   }
 
 private:
-  bool getBoolData(const char * key, bool fallback)
-  {
-    bool value = fallback;
-    this->getGlobalSMData(std::string(key), value);
-    return value;
-  }
-
-  double getCycleSeconds()
-  {
-    double cycleSec = 2.0;
-    this->getGlobalSMData(std::string(sm_data::kWorkCycleSec), cycleSec);
-    return cycleSec;
-  }
-
-  bool isWorkReady()
-  {
-    const bool pcbPresent = getBoolData(sm_data::kPcbPresent, true);
-    const bool leftSlotFree = getBoolData(sm_data::kLeftSlotFree, true);
-    const bool rightSlotFree = getBoolData(sm_data::kRightSlotFree, true);
-    return pcbPresent && (leftSlotFree || rightSlotFree);
-  }
-
+  CpTopLevelFlow * flow_;
   std::chrono::steady_clock::time_point enteredTime_;
   bool transitionPosted_{false};
 };

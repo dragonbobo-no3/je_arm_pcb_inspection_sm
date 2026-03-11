@@ -4,6 +4,7 @@
 
 #include <smacc2/smacc.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include "my_robot_arm_sm/components/cp_top_level_flow.hpp"
 #include "my_robot_arm_sm/sm_data.hpp"
 
 namespace my_robot_arm_sm
@@ -31,9 +32,10 @@ struct StWaitResources : smacc2::SmaccState<StWaitResources, SmMyRobotArm>
 
   void onEntry() 
   { 
+    this->requiresComponent(flow_);
     enteredTime_ = std::chrono::steady_clock::now();
     transitionPosted_ = false;
-    this->setGlobalSMData(std::string(sm_data::kResumeStateId), std::string(sm_data::kWaitResourcesState));
+    flow_->setResumeTarget(sm_data::kWaitResourcesState);
     RCLCPP_WARN(
       getLogger(),
       "StWaitResources::onEntry - waiting resources (debug keys handled by keyboard mapper)");
@@ -46,7 +48,7 @@ struct StWaitResources : smacc2::SmaccState<StWaitResources, SmMyRobotArm>
       return;
     }
 
-    const bool canWork = isWorkReady();
+    const bool canWork = flow_->isWorkReady();
     if (canWork)
     {
       transitionPosted_ = true;
@@ -57,7 +59,7 @@ struct StWaitResources : smacc2::SmaccState<StWaitResources, SmMyRobotArm>
 
     const auto elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
       std::chrono::steady_clock::now() - enteredTime_);
-    if (elapsed.count() >= getTimeoutSeconds())
+    if (elapsed.count() >= flow_->waitTimeoutSeconds())
     {
       transitionPosted_ = true;
       RCLCPP_WARN(getLogger(), "Wait resources timeout -> posting EvWaitTimeout");
@@ -71,28 +73,7 @@ struct StWaitResources : smacc2::SmaccState<StWaitResources, SmMyRobotArm>
   }
 
 private:
-  bool getBoolData(const char * key, bool fallback)
-  {
-    bool value = fallback;
-    this->getGlobalSMData(std::string(key), value);
-    return value;
-  }
-
-  double getTimeoutSeconds()
-  {
-    double timeoutSec = 10.0;
-    this->getGlobalSMData(std::string(sm_data::kWaitTimeoutSec), timeoutSec);
-    return timeoutSec;
-  }
-
-  bool isWorkReady()
-  {
-    const bool pcbPresent = getBoolData(sm_data::kPcbPresent, true);
-    const bool leftSlotFree = getBoolData(sm_data::kLeftSlotFree, true);
-    const bool rightSlotFree = getBoolData(sm_data::kRightSlotFree, true);
-    return pcbPresent && (leftSlotFree || rightSlotFree);
-  }
-
+  CpTopLevelFlow * flow_;
   std::chrono::steady_clock::time_point enteredTime_;
   bool transitionPosted_{false};
 };
