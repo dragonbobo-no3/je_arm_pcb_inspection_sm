@@ -43,8 +43,6 @@ struct StWork : smacc2::SmaccState<StWork, SmMyRobotArm, work_substates::StWorkR
         std::string(sm_data::kWorkResumeSubstateId),
         std::string(sm_data::kWorkSubstatePick));
     }
-
-    this->setGlobalSMData(std::string(sm_data::kResumeFromPause), false);
     flow_->setResumeTarget(sm_data::kWorkState);
     RCLCPP_WARN(
       getLogger(),

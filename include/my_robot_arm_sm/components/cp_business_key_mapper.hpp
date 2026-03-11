@@ -62,13 +62,43 @@ public:
     if (
       stateName.find("StWork") != std::string::npos ||
       stateName.find("StPick") != std::string::npos ||
+      stateName.find("StLPregrasp") != std::string::npos ||
+      stateName.find("StGripperOpen") != std::string::npos ||
+      stateName.find("StCartesianDown") != std::string::npos ||
+      stateName.find("StGripperClose") != std::string::npos ||
+      stateName.find("StCartesianUp") != std::string::npos ||
+      stateName.find("StLRetreat") != std::string::npos ||
       stateName.find("StInspect") != std::string::npos ||
       stateName.find("StSelectBin") != std::string::npos ||
       stateName.find("StPlace") != std::string::npos)
     {
-      if (stateName.find("StPick") != std::string::npos && key == 'n')
+      if (stateName.find("StLPregrasp") != std::string::npos && key == 'n')
+      {
+        this->postEvent<EvAtPregrasp>();
+      }
+      else if (stateName.find("StGripperOpen") != std::string::npos && key == 'n')
+      {
+        this->postEvent<EvGripperOpened>();
+      }
+      else if (stateName.find("StCartesianDown") != std::string::npos && key == 'n')
+      {
+        this->postEvent<EvAtGraspDepth>();
+      }
+      else if (stateName.find("StGripperClose") != std::string::npos && key == 'n')
+      {
+        this->postEvent<EvGripperClosed>();
+      }
+      else if (stateName.find("StCartesianUp") != std::string::npos && key == 'n')
+      {
+        this->postEvent<EvLifted>();
+      }
+      else if (stateName.find("StLRetreat") != std::string::npos && key == 'n')
       {
         this->postEvent<EvPickDone>();
+      }
+      else if (stateName.find("StPick") != std::string::npos && key == 'n')
+      {
+        this->postEvent<EvAtPregrasp>();
       }
       else if (stateName.find("StInspect") != std::string::npos && key == 'n')
       {

@@ -40,7 +40,13 @@ struct StWorkResumeRouter : smacc2::SmaccState<StWorkResumeRouter, StWork>
   void onEntry()
   {
     std::string substate = sm_data::kWorkSubstatePick;
+    bool resumeFromPause = false;
+    this->getGlobalSMData(std::string(sm_data::kResumeFromPause), resumeFromPause);
     this->getGlobalSMData(std::string(sm_data::kWorkResumeSubstateId), substate);
+
+    const bool restorePickSubstate = resumeFromPause && (substate == sm_data::kWorkSubstatePick);
+    this->setGlobalSMData(std::string(sm_data::kPickResumeFromPause), restorePickSubstate);
+    this->setGlobalSMData(std::string(sm_data::kResumeFromPause), false);
 
     RCLCPP_INFO(getLogger(), "WORK::RESUME_ROUTER onEntry - target substate: %s", substate.c_str());
 

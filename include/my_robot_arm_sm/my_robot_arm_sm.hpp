@@ -57,6 +57,8 @@ struct SmMyRobotArm : public smacc2::SmaccStateMachineBase<SmMyRobotArm, StIdle>
     this->setGlobalSMData(std::string(sm_data::kResumeStateId), std::string(sm_data::kWaitResourcesState));
     this->setGlobalSMData(std::string(sm_data::kResumeFromPause), false);
     this->setGlobalSMData(std::string(sm_data::kWorkResumeSubstateId), std::string(sm_data::kWorkSubstatePick));
+    this->setGlobalSMData(std::string(sm_data::kPickResumeFromPause), false);
+    this->setGlobalSMData(std::string(sm_data::kPickResumeSubstateId), std::string(sm_data::kPickSubstateLPregrasp));
     this->setGlobalSMData(std::string(sm_data::kPcbPresent), true);
     this->setGlobalSMData(std::string(sm_data::kLeftSlotFree), true);
     this->setGlobalSMData(std::string(sm_data::kRightSlotFree), true);

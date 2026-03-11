@@ -53,7 +53,16 @@ stateDiagram-v2
     [*] --> PICK
     
     state "PICK" as PICK {
-      [*] --> L_PREGRASP
+      [*] --> PICK_RESUME_ROUTER
+      PICK_RESUME_ROUTER --> L_PREGRASP : ev_pick_resume_to_l_pregrasp
+      PICK_RESUME_ROUTER --> GRIPPER_OPEN : ev_pick_resume_to_gripper_open
+      PICK_RESUME_ROUTER --> CARTESIAN_DOWN : ev_pick_resume_to_cartesian_down
+      PICK_RESUME_ROUTER --> GRIPPER_CLOSE : ev_pick_resume_to_gripper_close
+      PICK_RESUME_ROUTER --> CARTESIAN_UP : ev_pick_resume_to_cartesian_up
+      PICK_RESUME_ROUTER --> L_RETREAT : ev_pick_resume_to_l_retreat
+
+      %% resume 到 WORK->PICK 时，PICK_RESUME_ROUTER 根据黑板 pick_resume_substate_id 路由
+      %% 首次进入 PICK 时默认路由到 L_PREGRASP
       L_PREGRASP --> GRIPPER_OPEN : ev_at_pregrasp
       GRIPPER_OPEN --> CARTESIAN_DOWN : ev_gripper_opened
       CARTESIAN_DOWN --> GRIPPER_CLOSE : ev_at_grasp_depth

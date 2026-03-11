@@ -15,9 +15,14 @@ struct StPause;
 namespace work_substates
 {
 
+namespace pick_substates
+{
+struct StPickResumeRouter;
+}  // namespace pick_substates
+
 struct StInspect;
 
-struct StPick : smacc2::SmaccState<StPick, StWork>
+struct StPick : smacc2::SmaccState<StPick, StWork, pick_substates::StPickResumeRouter>
 {
   using SmaccState::SmaccState;
 
@@ -28,13 +33,34 @@ struct StPick : smacc2::SmaccState<StPick, StWork>
 
   void onEntry()
   {
+    bool pickResumeFromPause = false;
+    this->getGlobalSMData(std::string(sm_data::kPickResumeFromPause), pickResumeFromPause);
+
+    if (!pickResumeFromPause)
+    {
+      this->setGlobalSMData(
+        std::string(sm_data::kPickResumeSubstateId),
+        std::string(sm_data::kPickSubstateLPregrasp));
+    }
+
+    this->setGlobalSMData(std::string(sm_data::kPickResumeFromPause), false);
     this->setGlobalSMData(
       std::string(sm_data::kWorkResumeSubstateId),
       std::string(sm_data::kWorkSubstatePick));
-    RCLCPP_INFO(getLogger(), "WORK::PICK onEntry - press 'n' to post EvPickDone");
+    RCLCPP_INFO(
+      getLogger(),
+      "WORK::PICK onEntry - nested flow started (L_PREGRASP->GRIPPER_OPEN->CARTESIAN_DOWN->GRIPPER_CLOSE->CARTESIAN_UP->L_RETREAT)");
   }
 };
 
 }  // namespace work_substates
 
 }  // namespace my_robot_arm_sm
+
+#include "my_robot_arm_sm/states/work_substates/pick_substates/st_pick_resume_router.hpp"
+#include "my_robot_arm_sm/states/work_substates/pick_substates/st_l_pregrasp.hpp"
+#include "my_robot_arm_sm/states/work_substates/pick_substates/st_gripper_open.hpp"
+#include "my_robot_arm_sm/states/work_substates/pick_substates/st_cartesian_down.hpp"
+#include "my_robot_arm_sm/states/work_substates/pick_substates/st_gripper_close.hpp"
+#include "my_robot_arm_sm/states/work_substates/pick_substates/st_cartesian_up.hpp"
+#include "my_robot_arm_sm/states/work_substates/pick_substates/st_l_retreat.hpp"

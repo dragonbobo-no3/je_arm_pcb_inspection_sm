@@ -46,11 +46,26 @@ struct EvInspectDone : sc::event<EvInspectDone> {};
 struct EvBinSelected : sc::event<EvBinSelected> {};
 struct EvPlaceDone : sc::event<EvPlaceDone> {};
 
+// PICK 内部阶段事件
+struct EvAtPregrasp : sc::event<EvAtPregrasp> {};
+struct EvGripperOpened : sc::event<EvGripperOpened> {};
+struct EvAtGraspDepth : sc::event<EvAtGraspDepth> {};
+struct EvGripperClosed : sc::event<EvGripperClosed> {};
+struct EvLifted : sc::event<EvLifted> {};
+
 // WORK 内部恢复路由事件
 struct EvWorkResumeToPick : sc::event<EvWorkResumeToPick> {};
 struct EvWorkResumeToInspect : sc::event<EvWorkResumeToInspect> {};
 struct EvWorkResumeToSelectBin : sc::event<EvWorkResumeToSelectBin> {};
 struct EvWorkResumeToPlace : sc::event<EvWorkResumeToPlace> {};
 struct EvWorkResumeToPlaceDecision : sc::event<EvWorkResumeToPlaceDecision> {};
+
+// PICK 内部恢复路由事件
+struct EvPickResumeToLPregrasp : sc::event<EvPickResumeToLPregrasp> {};
+struct EvPickResumeToGripperOpen : sc::event<EvPickResumeToGripperOpen> {};
+struct EvPickResumeToCartesianDown : sc::event<EvPickResumeToCartesianDown> {};
+struct EvPickResumeToGripperClose : sc::event<EvPickResumeToGripperClose> {};
+struct EvPickResumeToCartesianUp : sc::event<EvPickResumeToCartesianUp> {};
+struct EvPickResumeToLRetreat : sc::event<EvPickResumeToLRetreat> {};
 
 }  // namespace my_robot_arm_sm
