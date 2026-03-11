@@ -40,4 +40,17 @@ struct EvResumeToWaitResources : sc::event<EvResumeToWaitResources> {};
 struct EvResumeToWork : sc::event<EvResumeToWork> {};
 struct EvResumeToBack : sc::event<EvResumeToBack> {};
 
+// WORK 主干阶段事件
+struct EvPickDone : sc::event<EvPickDone> {};
+struct EvInspectDone : sc::event<EvInspectDone> {};
+struct EvBinSelected : sc::event<EvBinSelected> {};
+struct EvPlaceDone : sc::event<EvPlaceDone> {};
+
+// WORK 内部恢复路由事件
+struct EvWorkResumeToPick : sc::event<EvWorkResumeToPick> {};
+struct EvWorkResumeToInspect : sc::event<EvWorkResumeToInspect> {};
+struct EvWorkResumeToSelectBin : sc::event<EvWorkResumeToSelectBin> {};
+struct EvWorkResumeToPlace : sc::event<EvWorkResumeToPlace> {};
+struct EvWorkResumeToPlaceDecision : sc::event<EvWorkResumeToPlaceDecision> {};
+
 }  // namespace my_robot_arm_sm

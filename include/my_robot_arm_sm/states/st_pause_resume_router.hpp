@@ -29,11 +29,13 @@ struct StPauseResumeRouter : smacc2::SmaccState<StPauseResumeRouter, SmMyRobotAr
   {
     std::string resumeState = sm_data::kWaitResourcesState;
     this->getGlobalSMData(std::string(sm_data::kResumeStateId), resumeState);
+    this->setGlobalSMData(std::string(sm_data::kResumeFromPause), false);
 
     RCLCPP_INFO(getLogger(), "StPauseResumeRouter::onEntry - resume target: %s", resumeState.c_str());
 
     if (resumeState == sm_data::kWorkState)
     {
+      this->setGlobalSMData(std::string(sm_data::kResumeFromPause), true);
       this->template postEvent<EvResumeToWork>();
     }
     else if (resumeState == sm_data::kBackState)

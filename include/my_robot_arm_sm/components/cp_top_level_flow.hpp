@@ -33,6 +33,11 @@ public:
     return pcbPresent && (leftSlotFree || rightSlotFree);
   }
 
+  void setPcbPresent(bool value)
+  {
+    this->getStateMachine()->setGlobalSMData(std::string(sm_data::kPcbPresent), value);
+  }
+
   double waitTimeoutSeconds()
   {
     return getDoubleData(sm_data::kWaitTimeoutSec, 10.0);

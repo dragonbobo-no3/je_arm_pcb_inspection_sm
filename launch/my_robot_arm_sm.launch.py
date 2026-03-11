@@ -80,7 +80,7 @@ def generate_launch_description():
                 "export PATH=/usr/bin:/bin:/usr/sbin:/sbin:$PATH && "
                 "source /opt/ros/humble/setup.bash && "
                 "source /home/agx/ros2_ws/install/setup.bash && "
-                "echo 'SMACC2 keyboard ready: use s/p/r/b/f/u in this window' && "
+                "echo 'SMACC2 keyboard ready: s(start), n(next step), w(loop), p(pause), r(resume), b(back), f(fault), u(resource-unavailable)' && "
                 "/usr/bin/python3 /home/agx/ros2_ws/install/cl_keyboard/lib/cl_keyboard/keyboard_server_node.py; "
                 "echo; echo 'keyboard_server_node exited'; "
                 "read -r -n 1 -s -p 'Press any key to close...'"

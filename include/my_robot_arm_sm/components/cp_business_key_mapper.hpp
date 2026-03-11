@@ -59,11 +59,36 @@ public:
       return;
     }
 
-    if (stateName.find("StWork") != std::string::npos)
+    if (
+      stateName.find("StWork") != std::string::npos ||
+      stateName.find("StPick") != std::string::npos ||
+      stateName.find("StInspect") != std::string::npos ||
+      stateName.find("StSelectBin") != std::string::npos ||
+      stateName.find("StPlace") != std::string::npos)
     {
-      if (key == 'w')
+      if (stateName.find("StPick") != std::string::npos && key == 'n')
+      {
+        this->postEvent<EvPickDone>();
+      }
+      else if (stateName.find("StInspect") != std::string::npos && key == 'n')
+      {
+        this->postEvent<EvInspectDone>();
+      }
+      else if (stateName.find("StSelectBin") != std::string::npos && key == 'n')
+      {
+        this->postEvent<EvBinSelected>();
+      }
+      else if (stateName.find("StPlace") != std::string::npos && key == 'n')
+      {
+        this->postEvent<EvPlaceDone>();
+      }
+      else if (stateName.find("StPlaceDecision") != std::string::npos && key == 'w')
       {
         this->postEvent<EvCanWork>();
+      }
+      else if (stateName.find("StPlaceDecision") != std::string::npos && key == 'u')
+      {
+        this->postEvent<EvResourcesUnavailable>();
       }
       else if (key == 'p')
       {
