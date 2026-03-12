@@ -36,11 +36,11 @@ nano src/SMACC2/smacc2_sm_reference_library/my_robot_arm_sm/config/move_group_cl
 **第2步** - 重新启动节点（无需编译）：
 ```bash
 # 关闭当前运行
-pkill -f my_robot_arm_sm_node
+pkill -f je_arm_pcb_inspection_sm_node
 
 # 重新启动
 source ~/ros2_ws/install/setup.bash
-ros2 launch my_robot_arm_sm my_robot_arm_sm.launch.py
+ros2 launch je_arm_pcb_inspection_sm je_arm_pcb_inspection_sm.launch.py
 ```
 
 ### 📐 四元数说明

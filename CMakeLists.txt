@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(my_robot_arm_sm)
+project(je_arm_pcb_inspection_sm)
 
 # Default to C++17
 if(NOT CMAKE_CXX_STANDARD)
@@ -47,7 +47,7 @@ include_directories(
 )
 
 add_executable(${PROJECT_NAME}_node
-  src/my_robot_arm_sm/my_robot_arm_sm_node.cpp
+  src/je_arm_pcb_inspection_sm/je_arm_pcb_inspection_sm_node.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}_node
@@ -61,7 +61,7 @@ ament_target_dependencies(${PROJECT_NAME}_node ${THIS_PACKAGE_INCLUDE_DEPENDS})
 
 # Fake Trajectory Executor executable
 add_executable(fake_trajectory_executor
-  src/my_robot_arm_sm/fake_trajectory_executor.cpp
+  src/je_arm_pcb_inspection_sm/fake_trajectory_executor.cpp
 )
 
 target_link_libraries(fake_trajectory_executor

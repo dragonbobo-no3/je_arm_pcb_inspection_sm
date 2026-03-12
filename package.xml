@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>my_robot_arm_sm</name>
+  <name>je_arm_pcb_inspection_sm</name>
   <version>2.3.20</version>
   <description>Minimal SMACC2 state machine for JEARM Home/Pick/Place motions</description>
   <maintainer email="smacc2@smacc2.cool">SMACC2 is cool</maintainer>
