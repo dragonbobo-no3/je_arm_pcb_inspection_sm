@@ -21,9 +21,6 @@ find_package(cl_moveit2z REQUIRED)
 find_package(cl_keyboard REQUIRED)
 find_package(my_robot_arm_cb_library REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rclcpp_action REQUIRED)
-find_package(control_msgs REQUIRED)
-find_package(sensor_msgs REQUIRED)
 
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS
@@ -35,9 +32,6 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   cl_keyboard
   my_robot_arm_cb_library
   rclcpp
-  rclcpp_action
-  control_msgs
-  sensor_msgs
 )
 
 include_directories(
@@ -59,17 +53,6 @@ target_link_libraries(${PROJECT_NAME}_node
 
 ament_target_dependencies(${PROJECT_NAME}_node ${THIS_PACKAGE_INCLUDE_DEPENDS})
 
-# Fake Trajectory Executor executable
-add_executable(fake_trajectory_executor
-  src/je_arm_pcb_inspection_sm/fake_trajectory_executor.cpp
-)
-
-target_link_libraries(fake_trajectory_executor
-  ${Boost_LIBRARIES}
-)
-
-ament_target_dependencies(fake_trajectory_executor ${THIS_PACKAGE_INCLUDE_DEPENDS})
-
 install(
   DIRECTORY include/
   DESTINATION include
@@ -85,7 +68,6 @@ install(DIRECTORY
 
 install(TARGETS
   ${PROJECT_NAME}_node
-  fake_trajectory_executor
   DESTINATION lib/${PROJECT_NAME}
 )
 

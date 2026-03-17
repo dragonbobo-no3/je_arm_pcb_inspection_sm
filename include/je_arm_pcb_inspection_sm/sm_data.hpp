@@ -21,7 +21,10 @@ inline constexpr const char * kWorkSubstatePlaceDecision = "WORK_PLACE_DECISION"
 
 inline constexpr const char * kPickResumeFromPause = "pick_resume_from_pause";
 inline constexpr const char * kPickResumeSubstateId = "pick_resume_substate_id";
-inline constexpr const char * kPickSubstateLPregrasp = "PICK_L_PREGRASP";
+inline constexpr const char * kPickSubstateLPregrasp = "PICK_L_PREGRASP";  // legacy: falls back to P1
+inline constexpr const char * kPickSubstateLPregraspP1 = "PICK_L_PREGRASP_P1";
+inline constexpr const char * kPickSubstateLPregraspP2 = "PICK_L_PREGRASP_P2";
+inline constexpr const char * kPickSubstateLPregraspP3 = "PICK_L_PREGRASP_P3";
 inline constexpr const char * kPickSubstateGripperOpen = "PICK_GRIPPER_OPEN";
 inline constexpr const char * kPickSubstateCartesianDown = "PICK_CARTESIAN_DOWN";
 inline constexpr const char * kPickSubstateGripperClose = "PICK_GRIPPER_CLOSE";

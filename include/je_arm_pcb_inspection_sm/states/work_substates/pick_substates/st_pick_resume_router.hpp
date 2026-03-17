@@ -24,6 +24,9 @@ namespace pick_substates
 {
 
 struct StLPregrasp;
+struct StLPregraspP1;
+struct StLPregraspP2;
+struct StLPregraspP3;
 struct StGripperOpen;
 struct StCartesianDown;
 struct StGripperClose;
@@ -35,7 +38,10 @@ struct StPickResumeRouter : smacc2::SmaccState<StPickResumeRouter, StPick>
   using SmaccState::SmaccState;
 
   typedef boost::mpl::list<
-    smacc2::Transition<EvPickResumeToLPregrasp, StLPregrasp>,
+    smacc2::Transition<EvPickResumeToLPregrasp, StLPregrasp>,    // legacy fallback -> P1
+    smacc2::Transition<EvPickResumeToLPregraspP1, StLPregraspP1>,
+    smacc2::Transition<EvPickResumeToLPregraspP2, StLPregraspP2>,
+    smacc2::Transition<EvPickResumeToLPregraspP3, StLPregraspP3>,
     smacc2::Transition<EvPickResumeToGripperOpen, StGripperOpen>,
     smacc2::Transition<EvPickResumeToCartesianDown, StCartesianDown>,
     smacc2::Transition<EvPickResumeToGripperClose, StGripperClose>,
@@ -45,12 +51,20 @@ struct StPickResumeRouter : smacc2::SmaccState<StPickResumeRouter, StPick>
 
   void onEntry()
   {
-    std::string substate = sm_data::kPickSubstateLPregrasp;
+    std::string substate = sm_data::kPickSubstateLPregraspP1;
     this->getGlobalSMData(std::string(sm_data::kPickResumeSubstateId), substate);
 
     RCLCPP_INFO(getLogger(), "WORK::PICK::RESUME_ROUTER onEntry - target substate: %s", substate.c_str());
 
-    if (substate == sm_data::kPickSubstateGripperOpen)
+    if (substate == sm_data::kPickSubstateLPregraspP2)
+    {
+      this->template postEvent<EvPickResumeToLPregraspP2>();
+    }
+    else if (substate == sm_data::kPickSubstateLPregraspP3)
+    {
+      this->template postEvent<EvPickResumeToLPregraspP3>();
+    }
+    else if (substate == sm_data::kPickSubstateGripperOpen)
     {
       this->template postEvent<EvPickResumeToGripperOpen>();
     }
@@ -72,7 +86,8 @@ struct StPickResumeRouter : smacc2::SmaccState<StPickResumeRouter, StPick>
     }
     else
     {
-      this->template postEvent<EvPickResumeToLPregrasp>();
+      // Default: start pregrasp from P1 (covers P1 and legacy kPickSubstateLPregrasp)
+      this->template postEvent<EvPickResumeToLPregraspP1>();
     }
   }
 };

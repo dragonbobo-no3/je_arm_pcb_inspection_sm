@@ -61,7 +61,10 @@ struct EvWorkResumeToPlace : sc::event<EvWorkResumeToPlace> {};
 struct EvWorkResumeToPlaceDecision : sc::event<EvWorkResumeToPlaceDecision> {};
 
 // PICK 内部恢复路由事件
-struct EvPickResumeToLPregrasp : sc::event<EvPickResumeToLPregrasp> {};
+struct EvPickResumeToLPregrasp : sc::event<EvPickResumeToLPregrasp> {};  // fallback → P1
+struct EvPickResumeToLPregraspP1 : sc::event<EvPickResumeToLPregraspP1> {};
+struct EvPickResumeToLPregraspP2 : sc::event<EvPickResumeToLPregraspP2> {};
+struct EvPickResumeToLPregraspP3 : sc::event<EvPickResumeToLPregraspP3> {};
 struct EvPickResumeToGripperOpen : sc::event<EvPickResumeToGripperOpen> {};
 struct EvPickResumeToCartesianDown : sc::event<EvPickResumeToCartesianDown> {};
 struct EvPickResumeToGripperClose : sc::event<EvPickResumeToGripperClose> {};
