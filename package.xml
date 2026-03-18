@@ -18,6 +18,7 @@
   <depend>my_jearm_moveit_config</depend>
   <depend>cl_keyboard</depend>
   <depend>my_robot_arm_cb_library</depend>
+  <depend>geometry_msgs</depend>
   <depend>rclcpp</depend>
   <export>
     <build_type>ament_cmake</build_type>

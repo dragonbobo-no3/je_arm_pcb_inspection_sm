@@ -20,6 +20,7 @@ find_package(Boost COMPONENTS thread REQUIRED)
 find_package(cl_moveit2z REQUIRED)
 find_package(cl_keyboard REQUIRED)
 find_package(my_robot_arm_cb_library REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
 
 
@@ -31,6 +32,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   cl_moveit2z
   cl_keyboard
   my_robot_arm_cb_library
+  geometry_msgs
   rclcpp
 )
 

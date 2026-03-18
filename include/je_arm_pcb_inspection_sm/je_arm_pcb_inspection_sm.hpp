@@ -62,6 +62,14 @@ struct SmJeArmPcbInspection : public smacc2::SmaccStateMachineBase<SmJeArmPcbIns
     this->setGlobalSMData(std::string(sm_data::kPcbPresent), true);
     this->setGlobalSMData(std::string(sm_data::kLeftSlotFree), true);
     this->setGlobalSMData(std::string(sm_data::kRightSlotFree), true);
+    this->setGlobalSMData(std::string(sm_data::kPcbTargetFrameId), std::string("base_link"));
+    this->setGlobalSMData(std::string(sm_data::kPcbTargetX), -0.38223850462518716);
+    this->setGlobalSMData(std::string(sm_data::kPcbTargetY), 0.17516332117030306);
+    this->setGlobalSMData(std::string(sm_data::kPcbTargetZ), 0.3253017070504734);
+    this->setGlobalSMData(std::string(sm_data::kPcbTargetQx), 0.577391798319681);
+    this->setGlobalSMData(std::string(sm_data::kPcbTargetQy), 0.4299463000132024);
+    this->setGlobalSMData(std::string(sm_data::kPcbTargetQz), -0.5282853654249783);
+    this->setGlobalSMData(std::string(sm_data::kPcbTargetQw), -0.4501993591909244);
     this->setGlobalSMData(std::string(sm_data::kWaitTimeoutSec), 10.0);
     this->setGlobalSMData(std::string(sm_data::kWorkCycleSec), 2.0);
     this->setGlobalSMData(std::string(sm_data::kBackHomeSec), 1.5);

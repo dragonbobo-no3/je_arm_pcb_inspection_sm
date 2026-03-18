@@ -1,8 +1,10 @@
 #pragma once
 
+#include <geometry_msgs/msg/pose_stamped.hpp>
 #include <smacc2/smacc.hpp>
 #include <rclcpp/rclcpp.hpp>
 
+#include <cl_moveit2z/client_behaviors/cb_move_end_effector.hpp>
 #include <cl_moveit2z/client_behaviors/cb_move_known_state.hpp>
 
 #include "je_arm_pcb_inspection_sm/events.hpp"
@@ -21,6 +23,48 @@ struct StPick;
 
 namespace pick_substates
 {
+
+class CbMovePcbTargetPose : public cl_moveit2z::CbMoveEndEffector
+{
+public:
+  CbMovePcbTargetPose()
+  {
+    tip_link_ = "Link7";
+  }
+
+  void onEntry() override
+  {
+    geometry_msgs::msg::PoseStamped pose;
+    pose.header.frame_id = "base_link";
+    pose.pose.orientation.w = 1.0;
+
+    auto * stateMachine = this->getStateMachine();
+    stateMachine->getGlobalSMData(std::string(sm_data::kPcbTargetFrameId), pose.header.frame_id);
+    stateMachine->getGlobalSMData(std::string(sm_data::kPcbTargetX), pose.pose.position.x);
+    stateMachine->getGlobalSMData(std::string(sm_data::kPcbTargetY), pose.pose.position.y);
+    stateMachine->getGlobalSMData(std::string(sm_data::kPcbTargetZ), pose.pose.position.z);
+    stateMachine->getGlobalSMData(std::string(sm_data::kPcbTargetQx), pose.pose.orientation.x);
+    stateMachine->getGlobalSMData(std::string(sm_data::kPcbTargetQy), pose.pose.orientation.y);
+    stateMachine->getGlobalSMData(std::string(sm_data::kPcbTargetQz), pose.pose.orientation.z);
+    stateMachine->getGlobalSMData(std::string(sm_data::kPcbTargetQw), pose.pose.orientation.w);
+
+    targetPose = pose;
+
+    RCLCPP_INFO(
+      getLogger(),
+      "[CbMovePcbTargetPose] Simulated PCBA pose -> frame=%s pos=(%.4f, %.4f, %.4f) quat=(%.4f, %.4f, %.4f, %.4f)",
+      targetPose.header.frame_id.c_str(),
+      targetPose.pose.position.x,
+      targetPose.pose.position.y,
+      targetPose.pose.position.z,
+      targetPose.pose.orientation.x,
+      targetPose.pose.orientation.y,
+      targetPose.pose.orientation.z,
+      targetPose.pose.orientation.w);
+
+    cl_moveit2z::CbMoveEndEffector::onEntry();
+  }
+};
 
 struct StGripperOpen;
 
@@ -103,16 +147,14 @@ struct StLPregraspP3 : smacc2::SmaccState<StLPregraspP3, StLPregrasp>
 
   // EvAtPregrasp: manual bypass key ('n') for testing/debugging
   typedef boost::mpl::list<
-    smacc2::Transition<smacc2::EvCbSuccess<cl_moveit2z::CbMoveKnownState, OrArm>, StGripperOpen>,
-    smacc2::Transition<smacc2::EvCbFailure<cl_moveit2z::CbMoveKnownState, OrArm>, StPause>,
+    smacc2::Transition<smacc2::EvCbSuccess<CbMovePcbTargetPose, OrArm>, StGripperOpen>,
+    smacc2::Transition<smacc2::EvCbFailure<CbMovePcbTargetPose, OrArm>, StPause>,
     smacc2::Transition<EvAtPregrasp, StGripperOpen>
   > reactions;
 
   static void staticConfigure()
   {
-    configure_orthogonal<OrArm, cl_moveit2z::CbMoveKnownState>(
-      "je_arm_pcb_inspection_sm",
-      "config/move_group_client/joint_states/pick_p3.yaml");
+    configure_orthogonal<OrArm, CbMovePcbTargetPose>();
   }
 
   void onEntry()
@@ -122,7 +164,7 @@ struct StLPregraspP3 : smacc2::SmaccState<StLPregraspP3, StLPregrasp>
       std::string(sm_data::kPickSubstateLPregraspP3));
     RCLCPP_INFO(
       getLogger(),
-      "WORK::PICK::L_PREGRASP::P3 - moving to final pregrasp pose  [bypass: 'n']");
+      "WORK::PICK::L_PREGRASP::P3 - moving to simulated PCBA end-effector pose  [bypass: 'n']");
   }
 };
 
