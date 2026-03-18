@@ -6,6 +6,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include "je_arm_pcb_inspection_sm/components/cp_top_level_flow.hpp"
 #include "je_arm_pcb_inspection_sm/sm_data.hpp"
+#include "je_arm_pcb_inspection_sm/utils/logging.hpp"
 
 namespace je_arm_pcb_inspection_sm
 {
@@ -34,7 +35,7 @@ struct StBack : smacc2::SmaccState<StBack, SmJeArmPcbInspection>
     enteredTime_ = std::chrono::steady_clock::now();
     transitionPosted_ = false;
     flow_->setResumeTarget(sm_data::kBackState);
-    RCLCPP_WARN(getLogger(), "StBack::onEntry - homing arm (debug keys handled by keyboard mapper)"); 
+    RCLCPP_INFO(log_utils::bizLogger(), "[%s] ENTER BACK (homing)", log_utils::bjtNowString().c_str());
   }
 
   void update()
@@ -49,14 +50,14 @@ struct StBack : smacc2::SmaccState<StBack, SmJeArmPcbInspection>
     if (elapsed.count() >= flow_->backHomeSeconds())
     {
       transitionPosted_ = true;
-      RCLCPP_INFO(getLogger(), "Back motion complete -> posting EvBackDone");
+      RCLCPP_INFO(log_utils::bizLogger(), "[%s] TRANSITION BACK --(EvBackDone)--> WAIT_RESOURCES", log_utils::bjtNowString().c_str());
       this->template postEvent<EvBackDone>();
     }
   }
 
   void onExit() 
   { 
-    RCLCPP_WARN(getLogger(), "StBack::onExit"); 
+    RCLCPP_DEBUG(log_utils::bizLogger(), "[%s] EXIT BACK", log_utils::bjtNowString().c_str());
   }
 
 private:

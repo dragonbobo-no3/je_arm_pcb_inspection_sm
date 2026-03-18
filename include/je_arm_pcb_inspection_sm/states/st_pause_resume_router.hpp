@@ -4,6 +4,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include "je_arm_pcb_inspection_sm/sm_data.hpp"
+#include "je_arm_pcb_inspection_sm/utils/logging.hpp"
 
 namespace je_arm_pcb_inspection_sm
 {
@@ -31,8 +32,11 @@ struct StPauseResumeRouter : smacc2::SmaccState<StPauseResumeRouter, SmJeArmPcbI
     this->getGlobalSMData(std::string(sm_data::kResumeStateId), resumeState);
     this->setGlobalSMData(std::string(sm_data::kResumeFromPause), false);
 
-    RCLCPP_INFO(getLogger(), "StPauseResumeRouter::onEntry - resume target: %s", resumeState.c_str());
-
+    RCLCPP_INFO(
+      log_utils::bizLogger(),
+      "[%s] TRANSITION PAUSE --(resume)--> %s",
+      log_utils::bjtNowString().c_str(),
+      resumeState.c_str());
     if (resumeState == sm_data::kWorkState)
     {
       this->setGlobalSMData(std::string(sm_data::kResumeFromPause), true);
@@ -50,7 +54,7 @@ struct StPauseResumeRouter : smacc2::SmaccState<StPauseResumeRouter, SmJeArmPcbI
 
   void onExit()
   {
-    RCLCPP_INFO(getLogger(), "StPauseResumeRouter::onExit");
+    RCLCPP_DEBUG(log_utils::bizLogger(), "[%s] EXIT StPauseResumeRouter", log_utils::bjtNowString().c_str());
   }
 };
 

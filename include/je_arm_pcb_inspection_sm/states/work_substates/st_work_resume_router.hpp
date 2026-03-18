@@ -10,6 +10,7 @@
 #include "je_arm_pcb_inspection_sm/states/work_substates/st_select_bin.hpp"
 #include "je_arm_pcb_inspection_sm/states/work_substates/st_place.hpp"
 #include "je_arm_pcb_inspection_sm/states/work_substates/st_place_decision.hpp"
+#include "je_arm_pcb_inspection_sm/utils/logging.hpp"
 
 namespace je_arm_pcb_inspection_sm
 {
@@ -48,8 +49,11 @@ struct StWorkResumeRouter : smacc2::SmaccState<StWorkResumeRouter, StWork>
     this->setGlobalSMData(std::string(sm_data::kPickResumeFromPause), restorePickSubstate);
     this->setGlobalSMData(std::string(sm_data::kResumeFromPause), false);
 
-    RCLCPP_INFO(getLogger(), "WORK::RESUME_ROUTER onEntry - target substate: %s", substate.c_str());
-
+    RCLCPP_INFO(
+      log_utils::bizLogger(),
+      "[%s] TRANSITION WORK::RESUME_ROUTER --> %s",
+      log_utils::bjtNowString().c_str(),
+      substate.c_str());
     if (substate == sm_data::kWorkSubstateInspect)
     {
       this->template postEvent<EvWorkResumeToInspect>();

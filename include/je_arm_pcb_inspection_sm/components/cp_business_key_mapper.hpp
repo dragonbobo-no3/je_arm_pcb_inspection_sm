@@ -8,6 +8,8 @@
 #include <cl_keyboard/components/cp_keyboard_listener_1.hpp>
 
 #include "je_arm_pcb_inspection_sm/events.hpp"
+#include "je_arm_pcb_inspection_sm/sm_data.hpp"
+#include "je_arm_pcb_inspection_sm/utils/logging.hpp"
 
 namespace je_arm_pcb_inspection_sm
 {
@@ -24,7 +26,7 @@ public:
     cl_keyboard::components::CpKeyboardListener1 * keyboardListener;
     this->requiresComponent(keyboardListener);
     keyboardListener->OnKeyPress(&CpBusinessKeyMapper::onKeyPress, this);
-    RCLCPP_INFO(getLogger(), "CpBusinessKeyMapper initialized");
+    RCLCPP_INFO(log_utils::bizLogger(), "[%s] KEY_MAPPER ready", log_utils::bjtNowString().c_str());
   }
 
   void onKeyPress(char key)
@@ -36,6 +38,12 @@ public:
     }
 
     const std::string stateName = currentState->getClassName();
+
+    auto setPauseReasonFromState = [&]() {
+      this->getStateMachine()->setGlobalSMData(
+        std::string(sm_data::kPauseReason),
+        std::string("[") + log_utils::bjtNowString() + "] 手动暂停: key='p', state=" + stateName);
+    };
 
     if (stateName.find("StIdle") != std::string::npos)
     {
@@ -54,6 +62,7 @@ public:
       }
       else if (key == 'p')
       {
+        setPauseReasonFromState();
         this->postEvent<EvPauseRequested>();
       }
       return;
@@ -135,6 +144,7 @@ public:
     {
       if (key == 'p')
       {
+        setPauseReasonFromState();
         this->postEvent<EvPauseRequested>();
       }
       return;
@@ -152,6 +162,9 @@ public:
       }
       else if (key == 'f')
       {
+        this->getStateMachine()->setGlobalSMData(
+          std::string(sm_data::kPauseReason),
+          std::string("[") + log_utils::bjtNowString() + "] 故障转BACK: key='f', state=" + stateName);
         this->postEvent<EvFaultToBack>();
       }
     }

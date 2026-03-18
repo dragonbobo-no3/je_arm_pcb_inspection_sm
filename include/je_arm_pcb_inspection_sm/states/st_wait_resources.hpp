@@ -6,6 +6,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include "je_arm_pcb_inspection_sm/components/cp_top_level_flow.hpp"
 #include "je_arm_pcb_inspection_sm/sm_data.hpp"
+#include "je_arm_pcb_inspection_sm/utils/logging.hpp"
 
 namespace je_arm_pcb_inspection_sm
 {
@@ -36,9 +37,10 @@ struct StWaitResources : smacc2::SmaccState<StWaitResources, SmJeArmPcbInspectio
     enteredTime_ = std::chrono::steady_clock::now();
     transitionPosted_ = false;
     flow_->setResumeTarget(sm_data::kWaitResourcesState);
-    RCLCPP_WARN(
-      getLogger(),
-      "StWaitResources::onEntry - waiting resources (debug keys handled by keyboard mapper)");
+    RCLCPP_INFO(
+      log_utils::bizLogger(),
+      "[%s] ENTER WAIT_RESOURCES",
+      log_utils::bjtNowString().c_str());
   }
 
   void update()
@@ -52,7 +54,7 @@ struct StWaitResources : smacc2::SmaccState<StWaitResources, SmJeArmPcbInspectio
     if (canWork)
     {
       transitionPosted_ = true;
-      RCLCPP_INFO(getLogger(), "Resources ready -> posting EvCanWork");
+      RCLCPP_INFO(log_utils::bizLogger(), "[%s] TRANSITION WAIT_RESOURCES --(EvCanWork)--> WORK", log_utils::bjtNowString().c_str());
       this->template postEvent<EvCanWork>();
       return;
     }
@@ -62,14 +64,14 @@ struct StWaitResources : smacc2::SmaccState<StWaitResources, SmJeArmPcbInspectio
     if (elapsed.count() >= flow_->waitTimeoutSeconds())
     {
       transitionPosted_ = true;
-      RCLCPP_WARN(getLogger(), "Wait resources timeout -> posting EvWaitTimeout");
+      RCLCPP_WARN(log_utils::bizLogger(), "[%s] TRANSITION WAIT_RESOURCES --(EvWaitTimeout)--> IDLE", log_utils::bjtNowString().c_str());
       this->template postEvent<EvWaitTimeout>();
     }
   }
 
   void onExit() 
   { 
-    RCLCPP_WARN(getLogger(), "StWaitResources::onExit"); 
+    RCLCPP_DEBUG(log_utils::bizLogger(), "[%s] EXIT WAIT_RESOURCES", log_utils::bjtNowString().c_str());
   }
 
 private:

@@ -17,6 +17,8 @@
 #include <chrono>
 
 #include <cl_moveit2z/cl_moveit2z.hpp>
+#include <cl_moveit2z/components/cp_motion_planner.hpp>
+#include <cl_moveit2z/components/cp_trajectory_executor.hpp>
 #include <cl_moveit2z/components/cp_trajectory_history.hpp>
 #include <cl_moveit2z/components/cp_grasping_objects.hpp>
 
@@ -33,6 +35,8 @@ public:
   void onInitialize() override
   {
     auto move_group_client = this->createClient<cl_moveit2z::ClMoveit2z>("jearm");
+    move_group_client->createComponent<cl_moveit2z::CpMotionPlanner>();
+    move_group_client->createComponent<cl_moveit2z::CpTrajectoryExecutor>();
     move_group_client->createComponent<cl_moveit2z::CpTrajectoryHistory>();
     auto graspingComponent = move_group_client->createComponent<cl_moveit2z::CpGraspingComponent>();
 

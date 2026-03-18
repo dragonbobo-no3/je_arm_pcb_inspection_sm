@@ -24,6 +24,8 @@ def generate_launch_description():
         "CONDA_PROMPT_MODIFIER": "",
         "CONDA_SHLVL": "",
         "LD_PRELOAD": "",
+        "TZ": "Asia/Shanghai",
+        "RCUTILS_CONSOLE_OUTPUT_FORMAT": "[{severity}] [{name}]: {message}",
         "PATH": ["/usr/bin:/bin:/usr/sbin:/sbin:", EnvironmentVariable("PATH", default_value="")],
         "LD_LIBRARY_PATH": [
             "/opt/ros/humble/lib:/usr/lib/x86_64-linux-gnu:",
@@ -91,6 +93,13 @@ def generate_launch_description():
                 executable="je_arm_pcb_inspection_sm_node",
                 output="screen",
                 parameters=[moveit_params],
+                arguments=[
+                    "--ros-args",
+                    "--log-level", "warn",
+                    "--log-level", "SmJeArmPcbInspection:=error",
+                    "--log-level", "move_group_interface:=warn",
+                    "--log-level", "je_arm_pcb_inspection_sm.biz:=info",
+                ],
                 additional_env=runtime_env,
             )
         ],

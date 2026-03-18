@@ -34,6 +34,7 @@ inline constexpr const char * kPickSubstateLRetreat = "PICK_L_RETREAT";
 inline constexpr const char * kPcbPresent = "pcb_present";
 inline constexpr const char * kLeftSlotFree = "left_slot_free";
 inline constexpr const char * kRightSlotFree = "right_slot_free";
+inline constexpr const char * kPauseReason = "pause_reason";
 inline constexpr const char * kPcbTargetFrameId = "pcb_target_frame_id";
 inline constexpr const char * kPcbTargetX = "pcb_target_x";
 inline constexpr const char * kPcbTargetY = "pcb_target_y";

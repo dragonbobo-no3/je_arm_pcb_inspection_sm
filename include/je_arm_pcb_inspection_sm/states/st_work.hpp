@@ -4,6 +4,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include "je_arm_pcb_inspection_sm/components/cp_top_level_flow.hpp"
 #include "je_arm_pcb_inspection_sm/sm_data.hpp"
+#include "je_arm_pcb_inspection_sm/utils/logging.hpp"
 
 namespace je_arm_pcb_inspection_sm
 {
@@ -44,14 +45,17 @@ struct StWork : smacc2::SmaccState<StWork, SmJeArmPcbInspection, work_substates:
         std::string(sm_data::kWorkSubstatePick));
     }
     flow_->setResumeTarget(sm_data::kWorkState);
-    RCLCPP_WARN(
-      getLogger(),
-      "StWork::onEntry - hierarchical WORK flow started (PICK->INSPECT->SELECT_BIN->PLACE)"); 
+    RCLCPP_INFO(
+      log_utils::bizLogger(),
+      "[%s] ENTER WORK (PICK->INSPECT->SELECT_BIN->PLACE)",
+      log_utils::bjtNowString().c_str());
   }
+
+  
 
   void onExit() 
   { 
-    RCLCPP_WARN(getLogger(), "StWork::onExit"); 
+    RCLCPP_DEBUG(log_utils::bizLogger(), "[%s] EXIT WORK", log_utils::bjtNowString().c_str());
   }
 
 private:

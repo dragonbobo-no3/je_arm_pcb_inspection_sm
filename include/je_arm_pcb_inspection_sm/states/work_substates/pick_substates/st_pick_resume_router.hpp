@@ -11,6 +11,7 @@
 #include "je_arm_pcb_inspection_sm/states/work_substates/pick_substates/st_gripper_close.hpp"
 #include "je_arm_pcb_inspection_sm/states/work_substates/pick_substates/st_cartesian_up.hpp"
 #include "je_arm_pcb_inspection_sm/states/work_substates/pick_substates/st_l_retreat.hpp"
+#include "je_arm_pcb_inspection_sm/utils/logging.hpp"
 
 namespace je_arm_pcb_inspection_sm
 {
@@ -54,8 +55,11 @@ struct StPickResumeRouter : smacc2::SmaccState<StPickResumeRouter, StPick>
     std::string substate = sm_data::kPickSubstateLPregraspP1;
     this->getGlobalSMData(std::string(sm_data::kPickResumeSubstateId), substate);
 
-    RCLCPP_INFO(getLogger(), "WORK::PICK::RESUME_ROUTER onEntry - target substate: %s", substate.c_str());
-
+    RCLCPP_INFO(
+      log_utils::bizLogger(),
+      "[%s] TRANSITION PICK::RESUME_ROUTER --> %s",
+      log_utils::bjtNowString().c_str(),
+      substate.c_str());
     if (substate == sm_data::kPickSubstateLPregraspP2)
     {
       this->template postEvent<EvPickResumeToLPregraspP2>();

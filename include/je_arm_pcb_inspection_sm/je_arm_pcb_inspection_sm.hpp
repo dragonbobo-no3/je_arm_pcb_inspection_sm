@@ -33,6 +33,7 @@
 // EVENTS (must be after smacc2/smacc.hpp)
 #include "je_arm_pcb_inspection_sm/events.hpp"
 #include "je_arm_pcb_inspection_sm/sm_data.hpp"
+#include "je_arm_pcb_inspection_sm/utils/logging.hpp"
 
 using namespace cl_moveit2z;
 using namespace cl_keyboard;
@@ -73,6 +74,26 @@ struct SmJeArmPcbInspection : public smacc2::SmaccStateMachineBase<SmJeArmPcbIns
     this->setGlobalSMData(std::string(sm_data::kWaitTimeoutSec), 10.0);
     this->setGlobalSMData(std::string(sm_data::kWorkCycleSec), 2.0);
     this->setGlobalSMData(std::string(sm_data::kBackHomeSec), 1.5);
+
+    this->setTransitionCallback(
+      [this](const smacc2::introspection::SmaccTransitionInfo & transitionInfo)
+      {
+        const std::string source =
+          transitionInfo.sourceState ? transitionInfo.sourceState->toShortName() : "<unknown>";
+        const std::string target =
+          transitionInfo.destinyState ? transitionInfo.destinyState->toShortName() : "<unknown>";
+        const std::string event =
+          transitionInfo.eventInfo ? transitionInfo.eventInfo->getEventTypeName() : "<unknown>";
+
+        RCLCPP_INFO(
+          log_utils::bizLogger(),
+          "[%s] TRANSITION %s --(%s)--> %s | %s",
+          log_utils::bjtNowString().c_str(),
+          source.c_str(),
+          event.c_str(),
+          target.c_str(),
+          log_utils::formatArmSnapshot(*this).c_str());
+      });
 
     this->createOrthogonal<OrArm>(); 
     this->createOrthogonal<OrKeyboard>();

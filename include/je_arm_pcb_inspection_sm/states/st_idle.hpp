@@ -2,6 +2,7 @@
 
 #include <smacc2/smacc.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include "je_arm_pcb_inspection_sm/utils/logging.hpp"
 
 namespace je_arm_pcb_inspection_sm
 {
@@ -28,12 +29,12 @@ struct StIdle : smacc2::SmaccState<StIdle, SmJeArmPcbInspection>
 
   void onEntry() 
   { 
-    RCLCPP_WARN(getLogger(), "StIdle::onEntry - debug key: s => EvStartWork"); 
+    RCLCPP_INFO(log_utils::bizLogger(), "[%s] ENTER IDLE", log_utils::bjtNowString().c_str());
   }
 
   void onExit() 
   { 
-    RCLCPP_WARN(getLogger(), "StIdle::onExit"); 
+    RCLCPP_DEBUG(log_utils::bizLogger(), "[%s] EXIT IDLE", log_utils::bjtNowString().c_str());
   }
 };
 
