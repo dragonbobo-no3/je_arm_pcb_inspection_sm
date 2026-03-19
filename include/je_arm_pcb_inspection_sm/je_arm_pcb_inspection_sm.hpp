@@ -57,6 +57,13 @@ struct SmJeArmPcbInspection : public smacc2::SmaccStateMachineBase<SmJeArmPcbIns
   { 
     this->setGlobalSMData(std::string(sm_data::kResumeStateId), std::string(sm_data::kWaitResourcesState));
     this->setGlobalSMData(std::string(sm_data::kResumeFromPause), false);
+    this->setGlobalSMData(std::string(sm_data::kActivateResumeFromPause), false);
+    this->setGlobalSMData(
+      std::string(sm_data::kActivateResumeSubstateId),
+      std::string(sm_data::kActivateSubstateP1));
+    this->setGlobalSMData(
+      std::string(sm_data::kActivateDelayNextSubstateId),
+      std::string(sm_data::kActivateSubstateP1));
     this->setGlobalSMData(std::string(sm_data::kWorkResumeSubstateId), std::string(sm_data::kWorkSubstatePick));
     this->setGlobalSMData(std::string(sm_data::kPickResumeFromPause), false);
     this->setGlobalSMData(std::string(sm_data::kPickResumeSubstateId), std::string(sm_data::kPickSubstateLPregrasp));
@@ -109,6 +116,7 @@ struct SmJeArmPcbInspection : public smacc2::SmaccStateMachineBase<SmJeArmPcbIns
 // ====================================
 
 #include "states/st_idle.hpp"
+#include "states/st_activate.hpp"
 #include "states/st_wait_resources.hpp"
 #include "states/st_work.hpp"
 #include "states/st_back.hpp"

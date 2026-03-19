@@ -7,11 +7,18 @@ namespace je_arm_pcb_inspection_sm
 namespace sm_data
 {
 inline constexpr const char * kResumeStateId = "resume_state_id";
+inline constexpr const char * kActivateState = "ACTIVATE";
 inline constexpr const char * kWaitResourcesState = "WAIT_RESOURCES";
 inline constexpr const char * kWorkState = "WORK";
 inline constexpr const char * kBackState = "BACK";
 
 inline constexpr const char * kResumeFromPause = "resume_from_pause";
+inline constexpr const char * kActivateResumeFromPause = "activate_resume_from_pause";
+inline constexpr const char * kActivateResumeSubstateId = "activate_resume_substate_id";
+inline constexpr const char * kActivateSubstateP1 = "ACTIVATE_P1";
+inline constexpr const char * kActivateSubstateP2 = "ACTIVATE_P2";
+inline constexpr const char * kActivateSubstateDone = "ACTIVATE_DONE";
+inline constexpr const char * kActivateDelayNextSubstateId = "activate_delay_next_substate_id";
 inline constexpr const char * kWorkResumeSubstateId = "work_resume_substate_id";
 inline constexpr const char * kWorkSubstatePick = "WORK_PICK";
 inline constexpr const char * kWorkSubstateInspect = "WORK_INSPECT";

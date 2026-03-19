@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <string>
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
@@ -8,6 +9,7 @@
 #include <smacc2/smacc.hpp>
 
 #include <cl_keyboard/components/cp_keyboard_listener_1.hpp>
+#include <cl_moveit2z/components/cp_trajectory_executor.hpp>
 
 #include "je_arm_pcb_inspection_sm/events.hpp"
 #include "je_arm_pcb_inspection_sm/sm_data.hpp"
@@ -53,6 +55,26 @@ public:
         std::string("[") + log_utils::bjtNowString() + "] 手动暂停: key='p', state=" + stateName);
     };
 
+    auto tryPostPauseRequested = [&](bool setReason) {
+      if (key != 'p')
+      {
+        return false;
+      }
+
+      if (isPauseDebounced())
+      {
+        return true;
+      }
+
+      if (setReason)
+      {
+        setPauseReasonFromState();
+      }
+
+      this->postEvent<EvPauseRequested>();
+      return true;
+    };
+
     if (stateName.find("StIdle") != std::string::npos)
     {
       if (key == 's')
@@ -74,8 +96,23 @@ public:
       }
       else if (key == 'p')
       {
-        setPauseReasonFromState();
-        this->postEvent<EvPauseRequested>();
+        (void)tryPostPauseRequested(true);
+      }
+      return;
+    }
+
+    if (stateName.find("StActivate") != std::string::npos)
+    {
+      if (key == 'p')
+      {
+        cl_moveit2z::CpTrajectoryExecutor * trajectoryExecutor = nullptr;
+        this->requiresComponent(trajectoryExecutor, false);
+        if (trajectoryExecutor != nullptr)
+        {
+          trajectoryExecutor->cancel();
+        }
+
+        (void)tryPostPauseRequested(true);
       }
       return;
     }
@@ -143,7 +180,7 @@ public:
       }
       else if (key == 'p')
       {
-        this->postEvent<EvPauseRequested>();
+        (void)tryPostPauseRequested(false);
       }
       else if (key == 'u')
       {
@@ -154,17 +191,13 @@ public:
 
     if (stateName.find("StBack") != std::string::npos)
     {
-      if (key == 'p')
-      {
-        setPauseReasonFromState();
-        this->postEvent<EvPauseRequested>();
-      }
+      (void)tryPostPauseRequested(true);
       return;
     }
 
     if (stateName.find("StDelay") != std::string::npos)
     {
-      if (key == 'p')
+      if (key == 'p' && !isPauseDebounced())
       {
         this->getStateMachine()->setGlobalSMData(
           std::string(sm_data::kPauseReason),
@@ -195,6 +228,23 @@ public:
   }
 
 private:
+  bool isPauseDebounced()
+  {
+    const auto now = std::chrono::steady_clock::now();
+    if (lastPauseRequestTime_.time_since_epoch().count() != 0)
+    {
+      const auto elapsedMs =
+        std::chrono::duration_cast<std::chrono::milliseconds>(now - lastPauseRequestTime_).count();
+      if (elapsedMs < 500)
+      {
+        return true;
+      }
+    }
+
+    lastPauseRequestTime_ = now;
+    return false;
+  }
+
   void publishDefaultPcbDetection()
   {
     je_arm_pcb_inspection_sm::msg::PcbDetection detectionMsg;
@@ -255,6 +305,7 @@ private:
 
   std::string pcbDetectionTopic_{"/vision/pcb_detection"};
   rclcpp::Publisher<je_arm_pcb_inspection_sm::msg::PcbDetection>::SharedPtr pcbDetectionPub_;
+  std::chrono::steady_clock::time_point lastPauseRequestTime_{};
 };
 
 }  // namespace je_arm_pcb_inspection_sm

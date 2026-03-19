@@ -10,6 +10,7 @@ namespace je_arm_pcb_inspection_sm
 struct SmJeArmPcbInspection;
 
 // 前向声明
+struct StActivate;
 struct StWaitResources;
 struct StDelay;
 struct StPause;
@@ -25,7 +26,7 @@ struct StIdle : smacc2::SmaccState<StIdle, SmJeArmPcbInspection>
   using SmaccState::SmaccState;
 
   typedef boost::mpl::list<
-    smacc2::Transition<EvStartWork, StWaitResources>,
+    smacc2::Transition<EvStartWork, StActivate>,
     smacc2::Transition<EvDelayRequested, StDelay>
   > reactions;
 

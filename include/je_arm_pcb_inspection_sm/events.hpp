@@ -42,6 +42,11 @@ struct EvFaultToBack : sc::event<EvFaultToBack> {};
 struct EvResumeToWaitResources : sc::event<EvResumeToWaitResources> {};
 struct EvResumeToWork : sc::event<EvResumeToWork> {};
 struct EvResumeToBack : sc::event<EvResumeToBack> {};
+struct EvResumeToActivate : sc::event<EvResumeToActivate> {};
+
+// ACTIVATE 内部恢复路由事件
+struct EvActivateResumeToP1 : sc::event<EvActivateResumeToP1> {};
+struct EvActivateResumeToP2 : sc::event<EvActivateResumeToP2> {};
 
 // WORK 主干阶段事件
 struct EvPickDone : sc::event<EvPickDone> {};

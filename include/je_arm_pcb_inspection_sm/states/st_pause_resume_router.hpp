@@ -11,6 +11,7 @@ namespace je_arm_pcb_inspection_sm
 
 struct SmJeArmPcbInspection;
 
+struct StActivate;
 struct StWaitResources;
 struct StWork;
 struct StBack;
@@ -21,6 +22,7 @@ struct StPauseResumeRouter : smacc2::SmaccState<StPauseResumeRouter, SmJeArmPcbI
   using SmaccState::SmaccState;
 
   typedef boost::mpl::list<
+    smacc2::Transition<EvResumeToActivate, StActivate>,
     smacc2::Transition<EvResumeToWaitResources, StWaitResources>,
     smacc2::Transition<EvResumeToWork, StWork>,
     smacc2::Transition<EvResumeToBack, StBack>
@@ -37,7 +39,12 @@ struct StPauseResumeRouter : smacc2::SmaccState<StPauseResumeRouter, SmJeArmPcbI
       "[%s] TRANSITION PAUSE --(resume)--> %s",
       log_utils::bjtNowString().c_str(),
       resumeState.c_str());
-    if (resumeState == sm_data::kWorkState)
+    if (resumeState == sm_data::kActivateState)
+    {
+      this->setGlobalSMData(std::string(sm_data::kActivateResumeFromPause), true);
+      this->template postEvent<EvResumeToActivate>();
+    }
+    else if (resumeState == sm_data::kWorkState)
     {
       this->setGlobalSMData(std::string(sm_data::kResumeFromPause), true);
       this->template postEvent<EvResumeToWork>();

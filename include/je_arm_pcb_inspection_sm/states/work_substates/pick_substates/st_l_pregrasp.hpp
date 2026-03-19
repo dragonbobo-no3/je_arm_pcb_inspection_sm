@@ -90,15 +90,14 @@ public:
 
 struct StGripperOpen;
 
-// Forward declarations for the three pregrasp waypoint sub-states
-struct StLPregraspP1;
-struct StLPregraspP2;
+// Forward declaration for the single pregrasp waypoint sub-state
 struct StLPregraspP3;
 
 // ---- Composite parent: StLPregrasp ----------------------------------------
-// Sequences through P1 -> P2 -> P3 before exiting to StGripperOpen.
+// P1 and P2 waypoints have been moved to StActivate (runs once at startup).
+// StLPregrasp now only sequences P3 (the final pregrasp pose).
 // EvPauseRequested is NOT listed here; it bubbles up to StPick which handles it.
-struct StLPregrasp : smacc2::SmaccState<StLPregrasp, StPick, StLPregraspP1>
+struct StLPregrasp : smacc2::SmaccState<StLPregrasp, StPick, StLPregraspP3>
 {
   using SmaccState::SmaccState;
 
@@ -106,65 +105,7 @@ struct StLPregrasp : smacc2::SmaccState<StLPregrasp, StPick, StLPregraspP1>
   {
     RCLCPP_INFO(
       getLogger(),
-      "WORK::PICK::L_PREGRASP - composite pregrasp sequence started (P1->P2->P3)");
-  }
-};
-
-// ---- P1: first approach waypoint ------------------------------------------
-struct StLPregraspP1 : smacc2::SmaccState<StLPregraspP1, StLPregrasp>
-{
-  using SmaccState::SmaccState;
-
-  typedef boost::mpl::list<
-    smacc2::Transition<smacc2::EvCbSuccess<cl_moveit2z::CbMoveKnownState, OrArm>, StDelay>,
-    smacc2::Transition<smacc2::EvCbFailure<cl_moveit2z::CbMoveKnownState, OrArm>, StPause>
-  > reactions;
-
-  static void staticConfigure()
-  {
-    configure_orthogonal<OrArm, cl_moveit2z::CbMoveKnownState>(
-      "je_arm_pcb_inspection_sm",
-      "config/move_group_client/joint_states/pick_p1.yaml");
-  }
-
-  void onEntry()
-  {
-    this->setGlobalSMData(
-      std::string(sm_data::kPickResumeSubstateId),
-      std::string(sm_data::kPickSubstateLPregraspP1));
-    this->setGlobalSMData(
-      std::string(sm_data::kPickDelayNextSubstateId),
-      std::string(sm_data::kPickSubstateLPregraspP2));
-    RCLCPP_INFO(getLogger(), "WORK::PICK::L_PREGRASP::P1 - moving to waypoint 1");
-  }
-};
-
-// ---- P2: intermediate waypoint --------------------------------------------
-struct StLPregraspP2 : smacc2::SmaccState<StLPregraspP2, StLPregrasp>
-{
-  using SmaccState::SmaccState;
-
-  typedef boost::mpl::list<
-    smacc2::Transition<smacc2::EvCbSuccess<cl_moveit2z::CbMoveKnownState, OrArm>, StDelay>,
-    smacc2::Transition<smacc2::EvCbFailure<cl_moveit2z::CbMoveKnownState, OrArm>, StPause>
-  > reactions;
-
-  static void staticConfigure()
-  {
-    configure_orthogonal<OrArm, cl_moveit2z::CbMoveKnownState>(
-      "je_arm_pcb_inspection_sm",
-      "config/move_group_client/joint_states/pick_p2.yaml");
-  }
-
-  void onEntry()
-  {
-    this->setGlobalSMData(
-      std::string(sm_data::kPickResumeSubstateId),
-      std::string(sm_data::kPickSubstateLPregraspP2));
-    this->setGlobalSMData(
-      std::string(sm_data::kPickDelayNextSubstateId),
-      std::string(sm_data::kPickSubstateLPregraspP3));
-    RCLCPP_INFO(getLogger(), "WORK::PICK::L_PREGRASP::P2 - moving to waypoint 2");
+      "WORK::PICK::L_PREGRASP - moving to P3 (pregrasp pose)");
   }
 };
 
