@@ -1,9 +1,13 @@
 #pragma once
 
+#include <geometry_msgs/msg/pose_stamped.hpp>
 #include <smacc2/smacc.hpp>
 #include <rclcpp/rclcpp.hpp>
 
+#include <cl_moveit2z/client_behaviors/cb_move_end_effector_linear_seeded.hpp>
+
 #include "je_arm_pcb_inspection_sm/events.hpp"
+#include "je_arm_pcb_inspection_sm/orthogonals/or_arm.hpp"
 #include "je_arm_pcb_inspection_sm/sm_data.hpp"
 
 namespace je_arm_pcb_inspection_sm
@@ -26,16 +30,54 @@ struct StCartesianDown : smacc2::SmaccState<StCartesianDown, StPick>
   using SmaccState::SmaccState;
 
   typedef boost::mpl::list<
-    smacc2::Transition<EvAtGraspDepth, StGripperClose>,
+    smacc2::Transition<
+      smacc2::EvCbSuccess<cl_moveit2z::CbMoveEndEffectorLinearSeeded, OrArm>,
+      StGripperClose>,
+    smacc2::Transition<
+      smacc2::EvCbFailure<cl_moveit2z::CbMoveEndEffectorLinearSeeded, OrArm>,
+      StPause>,
     smacc2::Transition<EvPauseRequested, StPause>
   > reactions;
+
+  static void staticConfigure()
+  {
+    configure_orthogonal_runtime<OrArm, cl_moveit2z::CbMoveEndEffectorLinearSeeded>(
+      [](cl_moveit2z::CbMoveEndEffectorLinearSeeded & bh, StCartesianDown & state)
+      {
+        geometry_msgs::msg::PoseStamped pose;
+        pose.header.frame_id = "base_link";
+        pose.pose.orientation.w = 1.0;
+
+        state.getGlobalSMData(std::string(sm_data::kPcbTargetFrameId), pose.header.frame_id);
+        state.getGlobalSMData(std::string(sm_data::kPcbTargetX), pose.pose.position.x);
+        state.getGlobalSMData(std::string(sm_data::kPcbTargetY), pose.pose.position.y);
+        state.getGlobalSMData(std::string(sm_data::kPcbTargetZ), pose.pose.position.z);
+        state.getGlobalSMData(std::string(sm_data::kPcbTargetQx), pose.pose.orientation.x);
+        state.getGlobalSMData(std::string(sm_data::kPcbTargetQy), pose.pose.orientation.y);
+        state.getGlobalSMData(std::string(sm_data::kPcbTargetQz), pose.pose.orientation.z);
+        state.getGlobalSMData(std::string(sm_data::kPcbTargetQw), pose.pose.orientation.w);
+
+        bh.tip_link_ = "Link7";
+        bh.linearStepMeters_ = 0.005;
+        bh.planningTimeSec_ = 1.0;
+        bh.targetPose = pose;
+
+        RCLCPP_INFO(
+          state.getLogger(),
+          "WORK::PICK::CARTESIAN_DOWN - runtime configured target at PCB pose: frame=%s pos=(%.4f, %.4f, %.4f)",
+          bh.targetPose.header.frame_id.c_str(),
+          bh.targetPose.pose.position.x,
+          bh.targetPose.pose.position.y,
+          bh.targetPose.pose.position.z);
+      });
+  }
 
   void onEntry()
   {
     this->setGlobalSMData(
       std::string(sm_data::kPickResumeSubstateId),
       std::string(sm_data::kPickSubstateCartesianDown));
-    RCLCPP_INFO(getLogger(), "WORK::PICK::CARTESIAN_DOWN - press 'n' => EvAtGraspDepth");
+    RCLCPP_INFO(getLogger(), "WORK::PICK::CARTESIAN_DOWN - executing linear seeded down motion to PCB pose");
   }
 };
 

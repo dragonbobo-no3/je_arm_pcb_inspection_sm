@@ -31,8 +31,6 @@ struct StWaitResources : smacc2::SmaccState<StWaitResources, SmJeArmPcbInspectio
     smacc2::Transition<EvPauseRequested, StPause>
   > reactions;
 
-  void runtimeConfigure() {}
-
   void onEntry() 
   { 
     this->requiresComponent(flow_);
@@ -43,41 +41,64 @@ struct StWaitResources : smacc2::SmaccState<StWaitResources, SmJeArmPcbInspectio
       log_utils::bizLogger(),
       "[%s] ENTER WAIT_RESOURCES",
       log_utils::bjtNowString().c_str());
-  }
 
-  void update()
-  {
-    if (transitionPosted_)
-    {
-      return;
-    }
+    auto node = this->getStateMachine().getNode();
+    checkTimer_ = node->create_wall_timer(
+      std::chrono::milliseconds(100),
+      [this]()
+      {
+        if (transitionPosted_)
+        {
+          return;
+        }
 
-    const bool canWork = flow_->isWorkReady();
-    if (canWork)
-    {
-      transitionPosted_ = true;
-      RCLCPP_INFO(log_utils::bizLogger(), "[%s] TRANSITION WAIT_RESOURCES --(EvCanWork)--> WORK", log_utils::bjtNowString().c_str());
-      this->template postEvent<EvCanWork>();
-      return;
-    }
+        const bool canWork = flow_->isWorkReady();
+        if (canWork)
+        {
+          transitionPosted_ = true;
+          if (checkTimer_)
+          {
+            checkTimer_->cancel();
+          }
+          RCLCPP_INFO(
+            log_utils::bizLogger(),
+            "[%s] TRANSITION WAIT_RESOURCES --(EvCanWork)--> WORK",
+            log_utils::bjtNowString().c_str());
+          this->template postEvent<EvCanWork>();
+          return;
+        }
 
-    const auto elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
-      std::chrono::steady_clock::now() - enteredTime_);
-    if (elapsed.count() >= flow_->waitTimeoutSeconds())
-    {
-      transitionPosted_ = true;
-      RCLCPP_WARN(log_utils::bizLogger(), "[%s] TRANSITION WAIT_RESOURCES --(EvWaitTimeout)--> IDLE", log_utils::bjtNowString().c_str());
-      this->template postEvent<EvWaitTimeout>();
-    }
+        const auto elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
+          std::chrono::steady_clock::now() - enteredTime_);
+        if (elapsed.count() >= flow_->waitTimeoutSeconds())
+        {
+          transitionPosted_ = true;
+          if (checkTimer_)
+          {
+            checkTimer_->cancel();
+          }
+          RCLCPP_WARN(
+            log_utils::bizLogger(),
+            "[%s] TRANSITION WAIT_RESOURCES --(EvWaitTimeout)--> IDLE",
+            log_utils::bjtNowString().c_str());
+          this->template postEvent<EvWaitTimeout>();
+        }
+      });
   }
 
   void onExit() 
   { 
+    if (checkTimer_)
+    {
+      checkTimer_->cancel();
+      checkTimer_.reset();
+    }
     RCLCPP_DEBUG(log_utils::bizLogger(), "[%s] EXIT WAIT_RESOURCES", log_utils::bjtNowString().c_str());
   }
 
 private:
   CpTopLevelFlow * flow_;
+  rclcpp::TimerBase::SharedPtr checkTimer_;
   std::chrono::steady_clock::time_point enteredTime_;
   bool transitionPosted_{false};
 };

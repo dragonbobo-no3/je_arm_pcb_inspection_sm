@@ -10,6 +10,7 @@
 #include "je_arm_pcb_inspection_sm/events.hpp"
 #include "je_arm_pcb_inspection_sm/orthogonals/or_arm.hpp"
 #include "je_arm_pcb_inspection_sm/sm_data.hpp"
+#include "je_arm_pcb_inspection_sm/utils/pick_offset_loader.hpp"
 #include "je_arm_pcb_inspection_sm/utils/logging.hpp"
 
 namespace je_arm_pcb_inspection_sm
@@ -53,11 +54,26 @@ public:
     stateMachine->getGlobalSMData(std::string(sm_data::kPcbTargetQy), pose.pose.orientation.y);
     stateMachine->getGlobalSMData(std::string(sm_data::kPcbTargetQz), pose.pose.orientation.z);
     stateMachine->getGlobalSMData(std::string(sm_data::kPcbTargetQw), pose.pose.orientation.w);
+
+    double offsetX = 0.0;
+    double offsetY = 0.0;
+    double offsetZ = 0.0;
+    std::string offsetPath;
+    const bool offsetLoaded =
+      je_arm_pcb_inspection_sm::utils::loadPickOffset(offsetX, offsetY, offsetZ, offsetPath);
+
+    pose.pose.position.x += offsetX;
+    pose.pose.position.y += offsetY;
+    pose.pose.position.z += offsetZ;
     targetPose = pose;
 
     RCLCPP_INFO(
       getLogger(),
-      "[CbMovePcbTargetPose] PCB target -> frame=%s pos=(%.4f, %.4f, %.4f) quat=(%.4f, %.4f, %.4f, %.4f)",
+      "[CbMovePcbTargetPose] PREGRASP target (pick_offset: %.4f, %.4f, %.4f, file=%s) -> frame=%s pos=(%.4f, %.4f, %.4f) quat=(%.4f, %.4f, %.4f, %.4f)",
+      offsetX,
+      offsetY,
+      offsetZ,
+      offsetLoaded ? offsetPath.c_str() : "<default>",
       targetPose.header.frame_id.c_str(),
       targetPose.pose.position.x,
       targetPose.pose.position.y,

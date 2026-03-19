@@ -61,7 +61,7 @@ struct SmJeArmPcbInspection : public smacc2::SmaccStateMachineBase<SmJeArmPcbIns
     this->setGlobalSMData(std::string(sm_data::kPickResumeFromPause), false);
     this->setGlobalSMData(std::string(sm_data::kPickResumeSubstateId), std::string(sm_data::kPickSubstateLPregrasp));
     this->setGlobalSMData(std::string(sm_data::kPickDelayNextSubstateId), std::string(sm_data::kPickSubstateGripperOpen));
-    this->setGlobalSMData(std::string(sm_data::kPcbPresent), true);
+    this->setGlobalSMData(std::string(sm_data::kPcbPresent), false);
     this->setGlobalSMData(std::string(sm_data::kLeftSlotFree), true);
     this->setGlobalSMData(std::string(sm_data::kRightSlotFree), true);
     this->setGlobalSMData(std::string(sm_data::kPcbTargetFrameId), std::string("base_link"));

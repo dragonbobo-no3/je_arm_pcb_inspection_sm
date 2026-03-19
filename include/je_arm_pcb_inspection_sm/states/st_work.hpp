@@ -1,5 +1,7 @@
 #pragma once
 
+#include <chrono>
+
 #include <smacc2/smacc.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include "je_arm_pcb_inspection_sm/components/cp_top_level_flow.hpp"
@@ -51,17 +53,33 @@ struct StWork : smacc2::SmaccState<StWork, SmJeArmPcbInspection, work_substates:
       log_utils::bizLogger(),
       "[%s] ENTER WORK (PICK->INSPECT->SELECT_BIN->PLACE)",
       log_utils::bjtNowString().c_str());
+
+    auto node = this->getStateMachine().getNode();
+    syncTimer_ = node->create_wall_timer(
+      std::chrono::milliseconds(100),
+      [this]()
+      {
+        // Keep flow-backed blackboard variables fresh (e.g. PCB detection),
+        // but do not trigger transitions from this state-level sync loop.
+        (void)flow_->isWorkReady();
+      });
   }
 
   
 
   void onExit() 
   { 
+    if (syncTimer_)
+    {
+      syncTimer_->cancel();
+      syncTimer_.reset();
+    }
     RCLCPP_DEBUG(log_utils::bizLogger(), "[%s] EXIT WORK", log_utils::bjtNowString().c_str());
   }
 
 private:
   CpTopLevelFlow * flow_;
+  rclcpp::TimerBase::SharedPtr syncTimer_;
 };
 
 }  // namespace je_arm_pcb_inspection_sm

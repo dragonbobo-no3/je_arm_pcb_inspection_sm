@@ -9,6 +9,7 @@
   <license>MyLicense</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
   <depend>libboost-thread-dev</depend>
 
@@ -19,7 +20,12 @@
   <depend>cl_keyboard</depend>
   <depend>my_robot_arm_cb_library</depend>
   <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
   <depend>rclcpp</depend>
+  <depend>ament_index_cpp</depend>
+  <depend>yaml-cpp</depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <member_of_group>rosidl_interface_packages</member_of_group>
   <export>
     <build_type>ament_cmake</build_type>
   </export>
