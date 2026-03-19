@@ -150,6 +150,18 @@ public:
       return;
     }
 
+    if (stateName.find("StDelay") != std::string::npos)
+    {
+      if (key == 'p')
+      {
+        this->getStateMachine()->setGlobalSMData(
+          std::string(sm_data::kPauseReason),
+          std::string("[") + log_utils::bjtNowString() + "] 手动暂停: key='p', state=" + stateName);
+        this->postEvent<EvPauseRequested>();
+      }
+      return;
+    }
+
     if (stateName.find("StPause") != std::string::npos)
     {
       if (key == 'r')

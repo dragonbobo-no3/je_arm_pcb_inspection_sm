@@ -13,6 +13,7 @@ struct SmJeArmPcbInspection;
 
 // 前向声明
 struct StBack;
+struct StDelay;
 struct StPause;
 
 namespace work_substates
@@ -27,6 +28,7 @@ struct StWork : smacc2::SmaccState<StWork, SmJeArmPcbInspection, work_substates:
 
   typedef boost::mpl::list<
     smacc2::Transition<EvResourcesUnavailable, StBack>,
+    smacc2::Transition<EvDelayRequested, StDelay>,
     smacc2::Transition<EvPauseRequested, StPause>
   > reactions;
 

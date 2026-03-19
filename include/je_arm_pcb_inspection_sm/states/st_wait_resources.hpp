@@ -16,6 +16,7 @@ struct SmJeArmPcbInspection;
 // 前向声明
 struct StIdle;
 struct StWork;
+struct StDelay;
 struct StPause;
 
 /// WAIT_RESOURCES 状态：等待资源就绪（PCB、放置槽位等）
@@ -26,6 +27,7 @@ struct StWaitResources : smacc2::SmaccState<StWaitResources, SmJeArmPcbInspectio
   typedef boost::mpl::list<
     smacc2::Transition<EvCanWork, StWork>,
     smacc2::Transition<EvWaitTimeout, StIdle>,
+    smacc2::Transition<EvDelayRequested, StDelay>,
     smacc2::Transition<EvPauseRequested, StPause>
   > reactions;
 

@@ -15,6 +15,7 @@ struct SmJeArmPcbInspection;
 
 // 前向声明
 struct StWaitResources;
+struct StDelay;
 struct StPause;
 
 /// BACK 状态：回零位置
@@ -24,6 +25,7 @@ struct StBack : smacc2::SmaccState<StBack, SmJeArmPcbInspection>
 
   typedef boost::mpl::list<
     smacc2::Transition<EvBackDone, StWaitResources>,
+    smacc2::Transition<EvDelayRequested, StDelay>,
     smacc2::Transition<EvPauseRequested, StPause>
   > reactions;
 

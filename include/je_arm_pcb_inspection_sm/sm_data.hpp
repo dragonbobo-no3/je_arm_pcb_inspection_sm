@@ -30,6 +30,7 @@ inline constexpr const char * kPickSubstateCartesianDown = "PICK_CARTESIAN_DOWN"
 inline constexpr const char * kPickSubstateGripperClose = "PICK_GRIPPER_CLOSE";
 inline constexpr const char * kPickSubstateCartesianUp = "PICK_CARTESIAN_UP";
 inline constexpr const char * kPickSubstateLRetreat = "PICK_L_RETREAT";
+inline constexpr const char * kPickDelayNextSubstateId = "pick_delay_next_substate_id";
 
 inline constexpr const char * kPcbPresent = "pcb_present";
 inline constexpr const char * kLeftSlotFree = "left_slot_free";
@@ -47,5 +48,6 @@ inline constexpr const char * kPcbTargetQw = "pcb_target_qw";
 inline constexpr const char * kWaitTimeoutSec = "wait_timeout_sec";
 inline constexpr const char * kWorkCycleSec = "work_cycle_sec";
 inline constexpr const char * kBackHomeSec = "back_home_sec";
+inline constexpr const char * kSharedDelaySec = "shared_delay_sec";
 }  // namespace sm_data
 }  // namespace je_arm_pcb_inspection_sm

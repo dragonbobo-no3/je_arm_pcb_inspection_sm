@@ -60,6 +60,7 @@ struct SmJeArmPcbInspection : public smacc2::SmaccStateMachineBase<SmJeArmPcbIns
     this->setGlobalSMData(std::string(sm_data::kWorkResumeSubstateId), std::string(sm_data::kWorkSubstatePick));
     this->setGlobalSMData(std::string(sm_data::kPickResumeFromPause), false);
     this->setGlobalSMData(std::string(sm_data::kPickResumeSubstateId), std::string(sm_data::kPickSubstateLPregrasp));
+    this->setGlobalSMData(std::string(sm_data::kPickDelayNextSubstateId), std::string(sm_data::kPickSubstateGripperOpen));
     this->setGlobalSMData(std::string(sm_data::kPcbPresent), true);
     this->setGlobalSMData(std::string(sm_data::kLeftSlotFree), true);
     this->setGlobalSMData(std::string(sm_data::kRightSlotFree), true);
@@ -74,6 +75,7 @@ struct SmJeArmPcbInspection : public smacc2::SmaccStateMachineBase<SmJeArmPcbIns
     this->setGlobalSMData(std::string(sm_data::kWaitTimeoutSec), 10.0);
     this->setGlobalSMData(std::string(sm_data::kWorkCycleSec), 2.0);
     this->setGlobalSMData(std::string(sm_data::kBackHomeSec), 1.5);
+    this->setGlobalSMData(std::string(sm_data::kSharedDelaySec), 0.6);
 
     this->setTransitionCallback(
       [this](const smacc2::introspection::SmaccTransitionInfo & transitionInfo)
@@ -110,5 +112,6 @@ struct SmJeArmPcbInspection : public smacc2::SmaccStateMachineBase<SmJeArmPcbIns
 #include "states/st_wait_resources.hpp"
 #include "states/st_work.hpp"
 #include "states/st_back.hpp"
+#include "states/st_delay.hpp"
 #include "states/st_pause_resume_router.hpp"
 #include "states/st_pause.hpp"

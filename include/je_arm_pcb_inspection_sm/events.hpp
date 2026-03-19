@@ -20,6 +20,9 @@ struct EvWaitTimeout : sc::event<EvWaitTimeout> {};
 // WAIT_RESOURCES / WORK / BACK -> PAUSE
 struct EvPauseRequested : sc::event<EvPauseRequested> {};
 
+// ANY_STATE -> DELAY (shared reusable timed hold)
+struct EvDelayRequested : sc::event<EvDelayRequested> {};
+
 // WORK -> BACK
 struct EvResourcesUnavailable : sc::event<EvResourcesUnavailable> {};
 
