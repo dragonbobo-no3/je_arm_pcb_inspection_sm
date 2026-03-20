@@ -9,7 +9,6 @@
 #include "je_arm_pcb_inspection_sm/states/work_substates/st_inspect.hpp"
 #include "je_arm_pcb_inspection_sm/states/work_substates/st_select_bin.hpp"
 #include "je_arm_pcb_inspection_sm/states/work_substates/st_place.hpp"
-#include "je_arm_pcb_inspection_sm/states/work_substates/st_place_decision.hpp"
 #include "je_arm_pcb_inspection_sm/utils/logging.hpp"
 
 namespace je_arm_pcb_inspection_sm
@@ -24,7 +23,6 @@ struct StPick;
 struct StInspect;
 struct StSelectBin;
 struct StPlace;
-struct StPlaceDecision;
 
 struct StWorkResumeRouter : smacc2::SmaccState<StWorkResumeRouter, StWork>
 {
@@ -34,8 +32,7 @@ struct StWorkResumeRouter : smacc2::SmaccState<StWorkResumeRouter, StWork>
     smacc2::Transition<EvWorkResumeToPick, StPick>,
     smacc2::Transition<EvWorkResumeToInspect, StInspect>,
     smacc2::Transition<EvWorkResumeToSelectBin, StSelectBin>,
-    smacc2::Transition<EvWorkResumeToPlace, StPlace>,
-    smacc2::Transition<EvWorkResumeToPlaceDecision, StPlaceDecision>
+    smacc2::Transition<EvWorkResumeToPlace, StPlace>
   > reactions;
 
   void onEntry()
@@ -46,7 +43,9 @@ struct StWorkResumeRouter : smacc2::SmaccState<StWorkResumeRouter, StWork>
     this->getGlobalSMData(std::string(sm_data::kWorkResumeSubstateId), substate);
 
     const bool restorePickSubstate = resumeFromPause && (substate == sm_data::kWorkSubstatePick);
+    const bool restorePlaceSubstate = resumeFromPause && (substate == sm_data::kWorkSubstatePlace);
     this->setGlobalSMData(std::string(sm_data::kPickResumeFromPause), restorePickSubstate);
+    this->setGlobalSMData(std::string(sm_data::kPlaceResumeFromPause), restorePlaceSubstate);
     this->setGlobalSMData(std::string(sm_data::kResumeFromPause), false);
 
     RCLCPP_INFO(
@@ -65,10 +64,6 @@ struct StWorkResumeRouter : smacc2::SmaccState<StWorkResumeRouter, StWork>
     else if (substate == sm_data::kWorkSubstatePlace)
     {
       this->template postEvent<EvWorkResumeToPlace>();
-    }
-    else if (substate == sm_data::kWorkSubstatePlaceDecision)
-    {
-      this->template postEvent<EvWorkResumeToPlaceDecision>();
     }
     else
     {

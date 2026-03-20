@@ -14,7 +14,7 @@ namespace je_arm_pcb_inspection_sm
 struct SmJeArmPcbInspection;
 
 // 前向声明
-struct StIdle;
+struct StBackToIdle;
 struct StWork;
 struct StDelay;
 struct StPause;
@@ -26,7 +26,8 @@ struct StWaitResources : smacc2::SmaccState<StWaitResources, SmJeArmPcbInspectio
 
   typedef boost::mpl::list<
     smacc2::Transition<EvCanWork, StWork>,
-    smacc2::Transition<EvWaitTimeout, StIdle>,
+    smacc2::Transition<EvWaitTimeout, StBackToIdle>,
+    smacc2::Transition<EvBackToIdleRequested, StBackToIdle>,
     smacc2::Transition<EvDelayRequested, StDelay>,
     smacc2::Transition<EvPauseRequested, StPause>
   > reactions;
@@ -79,7 +80,7 @@ struct StWaitResources : smacc2::SmaccState<StWaitResources, SmJeArmPcbInspectio
           }
           RCLCPP_WARN(
             log_utils::bizLogger(),
-            "[%s] TRANSITION WAIT_RESOURCES --(EvWaitTimeout)--> IDLE",
+            "[%s] TRANSITION WAIT_RESOURCES --(EvWaitTimeout)--> BACK_TO_IDLE",
             log_utils::bjtNowString().c_str());
           this->template postEvent<EvWaitTimeout>();
         }

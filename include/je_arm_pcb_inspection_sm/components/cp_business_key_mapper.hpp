@@ -3,10 +3,13 @@
 #include <chrono>
 #include <string>
 
+#include <ament_index_cpp/get_package_share_directory.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <je_arm_pcb_inspection_sm/msg/pcb_detection.hpp>
+#include <je_arm_pcb_inspection_sm/msg/place_slot.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <smacc2/smacc.hpp>
+#include <yaml-cpp/yaml.h>
 
 #include <cl_keyboard/components/cp_keyboard_listener_1.hpp>
 #include <cl_moveit2z/components/cp_trajectory_executor.hpp>
@@ -35,6 +38,9 @@ public:
     pcbDetectionPub_ =
       node->create_publisher<je_arm_pcb_inspection_sm::msg::PcbDetection>(
         pcbDetectionTopic_, rclcpp::QoS(10));
+    placeSlotPub_ =
+      node->create_publisher<je_arm_pcb_inspection_sm::msg::PlaceSlot>(
+        placeSlotTopic_, rclcpp::QoS(10));
 
     RCLCPP_INFO(log_utils::bizLogger(), "[%s] KEY_MAPPER ready", log_utils::bjtNowString().c_str());
   }
@@ -88,15 +94,23 @@ public:
     {
       if (key == 'w')
       {
-        publishDefaultPcbDetection();
+        publishPcbDetection(true);
       }
       else if (key == 'u')
       {
-        publishPcbAbsent();
+        publishPcbDetection(false);
+      }
+      else if (key == 'h')
+      {
+        publishFreePlaceSlotFromYaml();
       }
       else if (key == 'p')
       {
         (void)tryPostPauseRequested(true);
+      }
+      else if (key == 'i')
+      {
+        this->postEvent<EvBackToIdleRequested>();
       }
       return;
     }
@@ -158,25 +172,17 @@ public:
       {
         this->postEvent<EvAtPregrasp>();
       }
-      else if (stateName.find("StInspect") != std::string::npos && key == 'n')
-      {
-        this->postEvent<EvInspectDone>();
-      }
       else if (stateName.find("StSelectBin") != std::string::npos && key == 'n')
       {
         this->postEvent<EvBinSelected>();
       }
-      else if (stateName.find("StPlace") != std::string::npos && key == 'n')
+      else if (stateName.find("StPlaceGripperOpen") != std::string::npos && key == 'n')
+      {
+        this->postEvent<EvPlaceReleased>();
+      }
+      else if (stateName.find("StPlaceGripperClose") != std::string::npos && key == 'n')
       {
         this->postEvent<EvPlaceDone>();
-      }
-      else if (stateName.find("StPlaceDecision") != std::string::npos && key == 'w')
-      {
-        this->postEvent<EvCanWork>();
-      }
-      else if (stateName.find("StPlaceDecision") != std::string::npos && key == 'u')
-      {
-        this->postEvent<EvResourcesUnavailable>();
       }
       else if (key == 'p')
       {
@@ -184,13 +190,37 @@ public:
       }
       else if (key == 'u')
       {
-        this->postEvent<EvResourcesUnavailable>();
+        publishPcbDetection(false);
+      }
+      else if (key == 'h')
+      {
+        publishFreePlaceSlotFromYaml();
       }
       return;
     }
 
     if (stateName.find("StBack") != std::string::npos)
     {
+      if (key == 'p')
+      {
+        cl_moveit2z::CpTrajectoryExecutor * trajectoryExecutor = nullptr;
+        this->requiresComponent(trajectoryExecutor, false);
+        if (trajectoryExecutor != nullptr)
+        {
+          trajectoryExecutor->cancel();
+        }
+      }
+      else if (key == 'u')
+      {
+        publishPcbDetection(false);
+        return;
+      }
+      else if (key == 'h')
+      {
+        publishFreePlaceSlotFromYaml();
+        return;
+      }
+
       (void)tryPostPauseRequested(true);
       return;
     }
@@ -245,66 +275,109 @@ private:
     return false;
   }
 
-  void publishDefaultPcbDetection()
+  void publishPcbDetection(bool present)
   {
     je_arm_pcb_inspection_sm::msg::PcbDetection detectionMsg;
-    detectionMsg.present = true;
+    detectionMsg.present = present;
     detectionMsg.pose.header.stamp = this->getNode()->now();
     detectionMsg.pose.header.frame_id = "base_link";
     detectionMsg.pose.pose.orientation.w = 1.0;
 
-    this->getStateMachine()->getGlobalSMData(
-      std::string(sm_data::kPcbTargetFrameId), detectionMsg.pose.header.frame_id);
-    this->getStateMachine()->getGlobalSMData(
-      std::string(sm_data::kPcbTargetX), detectionMsg.pose.pose.position.x);
-    this->getStateMachine()->getGlobalSMData(
-      std::string(sm_data::kPcbTargetY), detectionMsg.pose.pose.position.y);
-    this->getStateMachine()->getGlobalSMData(
-      std::string(sm_data::kPcbTargetZ), detectionMsg.pose.pose.position.z);
-    this->getStateMachine()->getGlobalSMData(
-      std::string(sm_data::kPcbTargetQx), detectionMsg.pose.pose.orientation.x);
-    this->getStateMachine()->getGlobalSMData(
-      std::string(sm_data::kPcbTargetQy), detectionMsg.pose.pose.orientation.y);
-    this->getStateMachine()->getGlobalSMData(
-      std::string(sm_data::kPcbTargetQz), detectionMsg.pose.pose.orientation.z);
-    this->getStateMachine()->getGlobalSMData(
-      std::string(sm_data::kPcbTargetQw), detectionMsg.pose.pose.orientation.w);
+    if (present)
+    {
+      this->getStateMachine()->getGlobalSMData(
+        std::string(sm_data::kPcbTargetFrameId), detectionMsg.pose.header.frame_id);
+      this->getStateMachine()->getGlobalSMData(
+        std::string(sm_data::kPcbTargetX), detectionMsg.pose.pose.position.x);
+      this->getStateMachine()->getGlobalSMData(
+        std::string(sm_data::kPcbTargetY), detectionMsg.pose.pose.position.y);
+      this->getStateMachine()->getGlobalSMData(
+        std::string(sm_data::kPcbTargetZ), detectionMsg.pose.pose.position.z);
+      this->getStateMachine()->getGlobalSMData(
+        std::string(sm_data::kPcbTargetQx), detectionMsg.pose.pose.orientation.x);
+      this->getStateMachine()->getGlobalSMData(
+        std::string(sm_data::kPcbTargetQy), detectionMsg.pose.pose.orientation.y);
+      this->getStateMachine()->getGlobalSMData(
+        std::string(sm_data::kPcbTargetQz), detectionMsg.pose.pose.orientation.z);
+      this->getStateMachine()->getGlobalSMData(
+        std::string(sm_data::kPcbTargetQw), detectionMsg.pose.pose.orientation.w);
+    }
 
     if (pcbDetectionPub_ != nullptr)
     {
       pcbDetectionPub_->publish(detectionMsg);
     }
 
-    RCLCPP_INFO(
-      log_utils::bizLogger(),
-      "[%s] KEY 'w': published pcb_detection present=true pose=(%.4f, %.4f, %.4f)",
-      log_utils::bjtNowString().c_str(),
-      detectionMsg.pose.pose.position.x,
-      detectionMsg.pose.pose.position.y,
-      detectionMsg.pose.pose.position.z);
+    if (present)
+    {
+      RCLCPP_INFO(
+        log_utils::bizLogger(),
+        "[%s] KEY 'w': published pcb_detection present=true pose=(%.4f, %.4f, %.4f)",
+        log_utils::bjtNowString().c_str(),
+        detectionMsg.pose.pose.position.x,
+        detectionMsg.pose.pose.position.y,
+        detectionMsg.pose.pose.position.z);
+    }
+    else
+    {
+      RCLCPP_INFO(
+        log_utils::bizLogger(),
+        "[%s] KEY 'u': published pcb_detection present=false",
+        log_utils::bjtNowString().c_str());
+    }
   }
 
-  void publishPcbAbsent()
+  void publishFreePlaceSlotFromYaml()
   {
-    je_arm_pcb_inspection_sm::msg::PcbDetection detectionMsg;
-    detectionMsg.present = false;
-    detectionMsg.pose.header.stamp = this->getNode()->now();
-    detectionMsg.pose.header.frame_id = "base_link";
-    detectionMsg.pose.pose.orientation.w = 1.0;
-
-    if (pcbDetectionPub_ != nullptr)
+    try
     {
-      pcbDetectionPub_->publish(detectionMsg);
-    }
+      const std::string packageShareDir =
+        ament_index_cpp::get_package_share_directory("je_arm_pcb_inspection_sm");
+      const std::string yamlPath =
+        packageShareDir + "/config/move_group_client/cartesian_states/place.yaml";
 
-    RCLCPP_INFO(
-      log_utils::bizLogger(),
-      "[%s] KEY 'u': published pcb_detection present=false",
-      log_utils::bjtNowString().c_str());
+      YAML::Node root = YAML::LoadFile(yamlPath);
+
+      je_arm_pcb_inspection_sm::msg::PlaceSlot slotMsg;
+      slotMsg.free = true;
+      slotMsg.pose.header.stamp = this->getNode()->now();
+      slotMsg.pose.header.frame_id =
+        root["frame_id"] ? root["frame_id"].as<std::string>() : std::string("base_link");
+      slotMsg.pose.pose.position.x = root["x"].as<double>();
+      slotMsg.pose.pose.position.y = root["y"].as<double>();
+      slotMsg.pose.pose.position.z = root["z"].as<double>();
+      slotMsg.pose.pose.orientation.x = root["qx"].as<double>();
+      slotMsg.pose.pose.orientation.y = root["qy"].as<double>();
+      slotMsg.pose.pose.orientation.z = root["qz"].as<double>();
+      slotMsg.pose.pose.orientation.w = root["qw"].as<double>();
+
+      if (placeSlotPub_ != nullptr)
+      {
+        placeSlotPub_->publish(slotMsg);
+      }
+
+      RCLCPP_INFO(
+        log_utils::bizLogger(),
+        "[%s] KEY 'h': published place_slot free=true pose=(%.4f, %.4f, %.4f)",
+        log_utils::bjtNowString().c_str(),
+        slotMsg.pose.pose.position.x,
+        slotMsg.pose.pose.position.y,
+        slotMsg.pose.pose.position.z);
+    }
+    catch (const std::exception & e)
+    {
+      RCLCPP_ERROR(
+        log_utils::bizLogger(),
+        "[%s] KEY 'h': failed to load/publish place slot pose: %s",
+        log_utils::bjtNowString().c_str(),
+        e.what());
+    }
   }
 
   std::string pcbDetectionTopic_{"/vision/pcb_detection"};
+  std::string placeSlotTopic_{"/vision/place_slot_detection"};
   rclcpp::Publisher<je_arm_pcb_inspection_sm::msg::PcbDetection>::SharedPtr pcbDetectionPub_;
+  rclcpp::Publisher<je_arm_pcb_inspection_sm::msg::PlaceSlot>::SharedPtr placeSlotPub_;
   std::chrono::steady_clock::time_point lastPauseRequestTime_{};
 };
 

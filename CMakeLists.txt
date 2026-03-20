@@ -42,6 +42,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/PcbDetection.msg"
+  "msg/PlaceSlot.msg"
   DEPENDENCIES std_msgs geometry_msgs
 )
 

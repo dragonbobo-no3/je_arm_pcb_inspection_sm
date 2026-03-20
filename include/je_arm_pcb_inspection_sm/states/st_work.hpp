@@ -89,4 +89,3 @@ private:
 #include "je_arm_pcb_inspection_sm/states/work_substates/st_inspect.hpp"
 #include "je_arm_pcb_inspection_sm/states/work_substates/st_select_bin.hpp"
 #include "je_arm_pcb_inspection_sm/states/work_substates/st_place.hpp"
-#include "je_arm_pcb_inspection_sm/states/work_substates/st_place_decision.hpp"

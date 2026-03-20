@@ -4,7 +4,10 @@
 
 #include <smacc2/smacc.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <cl_moveit2z/client_behaviors/cb_move_known_state.hpp>
+
 #include "je_arm_pcb_inspection_sm/components/cp_top_level_flow.hpp"
+#include "je_arm_pcb_inspection_sm/orthogonals/or_arm.hpp"
 #include "je_arm_pcb_inspection_sm/sm_data.hpp"
 #include "je_arm_pcb_inspection_sm/utils/logging.hpp"
 
@@ -18,54 +21,56 @@ struct StWaitResources;
 struct StDelay;
 struct StPause;
 
-/// BACK 状态：回零位置
+/// BACK 状态：回到 WAIT_RESOURCES 的起始位姿（Activate P2）
 struct StBack : smacc2::SmaccState<StBack, SmJeArmPcbInspection>
 {
   using SmaccState::SmaccState;
 
   typedef boost::mpl::list<
-    smacc2::Transition<EvBackDone, StWaitResources>,
+    smacc2::Transition<smacc2::EvCbSuccess<cl_moveit2z::CbMoveKnownState, OrArm>, StWaitResources>,
+    smacc2::Transition<smacc2::EvCbFailure<cl_moveit2z::CbMoveKnownState, OrArm>, StPause>,
     smacc2::Transition<EvDelayRequested, StDelay>,
     smacc2::Transition<EvPauseRequested, StPause>
   > reactions;
 
-  void runtimeConfigure() {}
+  static void staticConfigure()
+  {
+    configure_orthogonal<OrArm, cl_moveit2z::CbMoveKnownState>(
+      "je_arm_pcb_inspection_sm",
+      "config/move_group_client/joint_states/pick_p2.yaml");
+  }
 
   void onEntry() 
   { 
     this->requiresComponent(flow_);
-    enteredTime_ = std::chrono::steady_clock::now();
-    transitionPosted_ = false;
     flow_->setResumeTarget(sm_data::kBackState);
-    RCLCPP_INFO(log_utils::bizLogger(), "[%s] ENTER BACK (homing)", log_utils::bjtNowString().c_str());
-  }
+    RCLCPP_INFO(
+      log_utils::bizLogger(),
+      "[%s] ENTER BACK - moving to WAIT_RESOURCES start pose (pick_p2)",
+      log_utils::bjtNowString().c_str());
 
-  void update()
-  {
-    if (transitionPosted_)
-    {
-      return;
-    }
-
-    const auto elapsed = std::chrono::duration_cast<std::chrono::duration<double>>(
-      std::chrono::steady_clock::now() - enteredTime_);
-    if (elapsed.count() >= flow_->backHomeSeconds())
-    {
-      transitionPosted_ = true;
-      RCLCPP_INFO(log_utils::bizLogger(), "[%s] TRANSITION BACK --(EvBackDone)--> WAIT_RESOURCES", log_utils::bjtNowString().c_str());
-      this->template postEvent<EvBackDone>();
-    }
+    auto node = this->getStateMachine().getNode();
+    syncTimer_ = node->create_wall_timer(
+      std::chrono::milliseconds(100),
+      [this]()
+      {
+        (void)flow_->isWorkReady();
+      });
   }
 
   void onExit() 
   { 
+    if (syncTimer_)
+    {
+      syncTimer_->cancel();
+      syncTimer_.reset();
+    }
     RCLCPP_DEBUG(log_utils::bizLogger(), "[%s] EXIT BACK", log_utils::bjtNowString().c_str());
   }
 
 private:
   CpTopLevelFlow * flow_;
-  std::chrono::steady_clock::time_point enteredTime_;
-  bool transitionPosted_{false};
+  rclcpp::TimerBase::SharedPtr syncTimer_;
 };
 
 }  // namespace je_arm_pcb_inspection_sm

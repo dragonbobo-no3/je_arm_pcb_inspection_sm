@@ -6,6 +6,7 @@
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <je_arm_pcb_inspection_sm/msg/pcb_detection.hpp>
+#include <je_arm_pcb_inspection_sm/msg/place_slot.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <smacc2/smacc.hpp>
 
@@ -42,10 +43,32 @@ public:
         }
       });
 
+    placeSlotSub_ = node->create_subscription<je_arm_pcb_inspection_sm::msg::PlaceSlot>(
+      placeSlotTopic_,
+      rclcpp::QoS(10),
+      [this](const je_arm_pcb_inspection_sm::msg::PlaceSlot::SharedPtr msg)
+      {
+        std::scoped_lock<std::mutex> lock(dataMutex_);
+        hasPlaceSlotUpdate_ = true;
+        if (msg->free && isPoseValid(msg->pose.pose))
+        {
+          latestPlacePose_ = msg->pose;
+          hasFreePlaceSlot_ = true;
+        }
+        else
+        {
+          hasFreePlaceSlot_ = false;
+        }
+      });
+
     RCLCPP_INFO(
       getLogger(),
       "[CpTopLevelFlow] Subscribed: pcb_detection='%s' (present+pose)",
       pcbDetectionTopic_.c_str());
+    RCLCPP_INFO(
+      getLogger(),
+      "[CpTopLevelFlow] Subscribed: place_slot='%s' (free+pose)",
+      placeSlotTopic_.c_str());
   }
 
   void setResumeTarget(const char * target)
@@ -58,7 +81,7 @@ public:
     syncTopicDataToBlackboard();
 
     const bool pcbPresent = getBoolData(sm_data::kPcbPresent, true);
-    const bool leftSlotFree = getBoolData(sm_data::kLeftSlotFree, true);
+    const bool leftSlotFree = getBoolData(sm_data::kLeftSlotFree, false);
     const bool rightSlotFree = getBoolData(sm_data::kRightSlotFree, true);
     return pcbPresent && (leftSlotFree || rightSlotFree);
   }
@@ -110,6 +133,34 @@ private:
       this->getStateMachine()->setGlobalSMData(
         std::string(sm_data::kPcbTargetQw), latestPcbPose_.pose.orientation.w);
     }
+
+    if (hasPlaceSlotUpdate_)
+    {
+      this->getStateMachine()->setGlobalSMData(
+        std::string(sm_data::kLeftSlotFree), hasFreePlaceSlot_);
+      this->getStateMachine()->setGlobalSMData(
+        std::string(sm_data::kRightSlotFree), false);
+
+      if (hasFreePlaceSlot_)
+      {
+        this->getStateMachine()->setGlobalSMData(
+          std::string(sm_data::kPlaceTargetFrameId), latestPlacePose_.header.frame_id);
+        this->getStateMachine()->setGlobalSMData(
+          std::string(sm_data::kPlaceTargetX), latestPlacePose_.pose.position.x);
+        this->getStateMachine()->setGlobalSMData(
+          std::string(sm_data::kPlaceTargetY), latestPlacePose_.pose.position.y);
+        this->getStateMachine()->setGlobalSMData(
+          std::string(sm_data::kPlaceTargetZ), latestPlacePose_.pose.position.z);
+        this->getStateMachine()->setGlobalSMData(
+          std::string(sm_data::kPlaceTargetQx), latestPlacePose_.pose.orientation.x);
+        this->getStateMachine()->setGlobalSMData(
+          std::string(sm_data::kPlaceTargetQy), latestPlacePose_.pose.orientation.y);
+        this->getStateMachine()->setGlobalSMData(
+          std::string(sm_data::kPlaceTargetQz), latestPlacePose_.pose.orientation.z);
+        this->getStateMachine()->setGlobalSMData(
+          std::string(sm_data::kPlaceTargetQw), latestPlacePose_.pose.orientation.w);
+      }
+    }
   }
 
   bool isPoseValid(const geometry_msgs::msg::Pose & pose) const
@@ -146,10 +197,15 @@ private:
   std::mutex dataMutex_;
   bool hasValidPcbPose_{false};
   geometry_msgs::msg::PoseStamped latestPcbPose_;
+  bool hasPlaceSlotUpdate_{false};
+  bool hasFreePlaceSlot_{false};
+  geometry_msgs::msg::PoseStamped latestPlacePose_;
 
   std::string pcbDetectionTopic_{"/vision/pcb_detection"};
+  std::string placeSlotTopic_{"/vision/place_slot_detection"};
 
   rclcpp::Subscription<je_arm_pcb_inspection_sm::msg::PcbDetection>::SharedPtr pcbDetectionSub_;
+  rclcpp::Subscription<je_arm_pcb_inspection_sm::msg::PlaceSlot>::SharedPtr placeSlotSub_;
 };
 
 }  // namespace je_arm_pcb_inspection_sm

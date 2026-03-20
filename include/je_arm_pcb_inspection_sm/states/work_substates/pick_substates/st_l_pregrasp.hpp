@@ -4,8 +4,7 @@
 #include <smacc2/smacc.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <cl_moveit2z/client_behaviors/cb_move_end_effector_seeded.hpp>
-#include <cl_moveit2z/client_behaviors/cb_move_known_state.hpp>
+#include <cl_moveit2z/client_behaviors/cb_move_end_effector_linear_seeded.hpp>
 
 #include "je_arm_pcb_inspection_sm/events.hpp"
 #include "je_arm_pcb_inspection_sm/orthogonals/or_arm.hpp"
@@ -29,14 +28,16 @@ namespace pick_substates
 
 /**
  * Reads PCB target pose from the blackboard and delegates planning/execution
- * to CbMoveEndEffectorSeeded (seeded IK + cancellation-safe plan+execute).
+ * to CbMoveEndEffectorLinearSeeded (linear Cartesian interpolation + seeded IK).
  */
-class CbMovePcbTargetPose : public cl_moveit2z::CbMoveEndEffectorSeeded
+class CbMovePcbTargetPose : public cl_moveit2z::CbMoveEndEffectorLinearSeeded
 {
 public:
   CbMovePcbTargetPose()
   {
     tip_link_ = "Link7";
+    linearStepMeters_ = 0.01;
+    minPathFraction_ = 0.98;
   }
 
   void onEntry() override
@@ -83,21 +84,21 @@ public:
       targetPose.pose.orientation.z,
       targetPose.pose.orientation.w);
 
-    // Delegate seeded IK planning + cancellation-safe execution to CL
-    CbMoveEndEffectorSeeded::onEntry();
+    // Delegate linear-cartesian seeded planning + execution to CL
+    CbMoveEndEffectorLinearSeeded::onEntry();
   }
 };
 
 struct StGripperOpen;
 
-// Forward declaration for the single pregrasp waypoint sub-state
-struct StLPregraspP3;
+// Forward declaration for the single pregrasp motion sub-state
+struct StLPregraspMove;
 
 // ---- Composite parent: StLPregrasp ----------------------------------------
 // P1 and P2 waypoints have been moved to StActivate (runs once at startup).
-// StLPregrasp now only sequences P3 (the final pregrasp pose).
+// StLPregrasp now only has one motion state (to final pregrasp pose).
 // EvPauseRequested is NOT listed here; it bubbles up to StPick which handles it.
-struct StLPregrasp : smacc2::SmaccState<StLPregrasp, StPick, StLPregraspP3>
+struct StLPregrasp : smacc2::SmaccState<StLPregrasp, StPick, StLPregraspMove>
 {
   using SmaccState::SmaccState;
 
@@ -105,12 +106,12 @@ struct StLPregrasp : smacc2::SmaccState<StLPregrasp, StPick, StLPregraspP3>
   {
     RCLCPP_INFO(
       getLogger(),
-      "WORK::PICK::L_PREGRASP - moving to P3 (pregrasp pose)");
+      "WORK::PICK::L_PREGRASP - moving to pregrasp pose");
   }
 };
 
-// ---- P3: final pregrasp pose ----------------------------------------------
-struct StLPregraspP3 : smacc2::SmaccState<StLPregraspP3, StLPregrasp>
+// ---- single move: final pregrasp pose -------------------------------------
+struct StLPregraspMove : smacc2::SmaccState<StLPregraspMove, StLPregrasp>
 {
   using SmaccState::SmaccState;
 
@@ -130,7 +131,7 @@ struct StLPregraspP3 : smacc2::SmaccState<StLPregraspP3, StLPregrasp>
   {
     this->setGlobalSMData(
       std::string(sm_data::kPickResumeSubstateId),
-      std::string(sm_data::kPickSubstateLPregraspP3));
+      std::string(sm_data::kPickSubstateLPregrasp));
     this->setGlobalSMData(
       std::string(sm_data::kPickDelayNextSubstateId),
       std::string(sm_data::kPickSubstateGripperOpen));
@@ -142,7 +143,7 @@ struct StLPregraspP3 : smacc2::SmaccState<StLPregraspP3, StLPregrasp>
       std::string(sm_data::kWorkSubstatePick));
     RCLCPP_INFO(
       getLogger(),
-      "WORK::PICK::L_PREGRASP::P3 - moving to simulated PCBA end-effector pose  [bypass: 'n']");
+      "WORK::PICK::L_PREGRASP::MOVE - linear move to simulated PCBA end-effector pose [bypass: 'n']");
   }
 };
 

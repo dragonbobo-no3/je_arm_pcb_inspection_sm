@@ -15,6 +15,7 @@ struct StActivate;
 struct StWaitResources;
 struct StWork;
 struct StBack;
+struct StBackToIdle;
 
 /// PAUSE 恢复路由状态：根据黑板中的 resume_state_id 恢复到目标状态
 struct StPauseResumeRouter : smacc2::SmaccState<StPauseResumeRouter, SmJeArmPcbInspection>
@@ -25,7 +26,8 @@ struct StPauseResumeRouter : smacc2::SmaccState<StPauseResumeRouter, SmJeArmPcbI
     smacc2::Transition<EvResumeToActivate, StActivate>,
     smacc2::Transition<EvResumeToWaitResources, StWaitResources>,
     smacc2::Transition<EvResumeToWork, StWork>,
-    smacc2::Transition<EvResumeToBack, StBack>
+    smacc2::Transition<EvResumeToBack, StBack>,
+    smacc2::Transition<EvResumeToBackToIdle, StBackToIdle>
   > reactions;
 
   void onEntry()
@@ -53,10 +55,16 @@ struct StPauseResumeRouter : smacc2::SmaccState<StPauseResumeRouter, SmJeArmPcbI
     {
       this->template postEvent<EvResumeToBack>();
     }
+    else if (resumeState == sm_data::kBackToIdleState)
+    {
+      this->setGlobalSMData(std::string(sm_data::kBackToIdleResumeFromPause), true);
+      this->template postEvent<EvResumeToBackToIdle>();
+    }
     else
     {
       this->template postEvent<EvResumeToWaitResources>();
     }
+
   }
 
   void onExit()

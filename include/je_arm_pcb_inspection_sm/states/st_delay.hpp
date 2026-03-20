@@ -50,7 +50,7 @@ struct StDelay : smacc2::SmaccState<StDelay, SmJeArmPcbInspection>
     this->getGlobalSMData(std::string(sm_data::kWorkResumeSubstateId), workSubstate);
     if (resumeState_ == sm_data::kWorkState && workSubstate == sm_data::kWorkSubstatePick)
     {
-      std::string pickNext = sm_data::kPickSubstateLPregraspP3;
+      std::string pickNext = sm_data::kPickSubstateLPregrasp;
       this->getGlobalSMData(std::string(sm_data::kPickDelayNextSubstateId), pickNext);
       this->setGlobalSMData(std::string(sm_data::kPickResumeSubstateId), pickNext);
     }

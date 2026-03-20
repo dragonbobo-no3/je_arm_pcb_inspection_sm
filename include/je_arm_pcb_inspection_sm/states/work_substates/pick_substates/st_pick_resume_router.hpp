@@ -25,7 +25,6 @@ namespace pick_substates
 {
 
 struct StLPregrasp;
-struct StLPregraspP3;
 struct StGripperOpen;
 struct StCartesianDown;
 struct StGripperClose;
@@ -37,8 +36,7 @@ struct StPickResumeRouter : smacc2::SmaccState<StPickResumeRouter, StPick>
   using SmaccState::SmaccState;
 
   typedef boost::mpl::list<
-    smacc2::Transition<EvPickResumeToLPregrasp, StLPregrasp>,    // legacy fallback -> P3
-    smacc2::Transition<EvPickResumeToLPregraspP3, StLPregraspP3>,
+    smacc2::Transition<EvPickResumeToLPregrasp, StLPregrasp>,
     smacc2::Transition<EvPickResumeToGripperOpen, StGripperOpen>,
     smacc2::Transition<EvPickResumeToCartesianDown, StCartesianDown>,
     smacc2::Transition<EvPickResumeToGripperClose, StGripperClose>,
@@ -48,7 +46,7 @@ struct StPickResumeRouter : smacc2::SmaccState<StPickResumeRouter, StPick>
 
   void onEntry()
   {
-    std::string substate = sm_data::kPickSubstateLPregraspP1;
+    std::string substate = sm_data::kPickSubstateLPregrasp;
     this->getGlobalSMData(std::string(sm_data::kPickResumeSubstateId), substate);
 
     RCLCPP_INFO(
@@ -56,9 +54,9 @@ struct StPickResumeRouter : smacc2::SmaccState<StPickResumeRouter, StPick>
       "[%s] TRANSITION PICK::RESUME_ROUTER --> %s",
       log_utils::bjtNowString().c_str(),
       substate.c_str());
-    if (substate == sm_data::kPickSubstateLPregraspP3)
+    if (substate == sm_data::kPickSubstateLPregrasp)
     {
-      this->template postEvent<EvPickResumeToLPregraspP3>();
+      this->template postEvent<EvPickResumeToLPregrasp>();
     }
     else if (substate == sm_data::kPickSubstateGripperOpen)
     {
@@ -82,8 +80,8 @@ struct StPickResumeRouter : smacc2::SmaccState<StPickResumeRouter, StPick>
     }
     else
     {
-      // Default: start pregrasp from P3 (P1/P2 now in StActivate; P3 is the only waypoint)
-      this->template postEvent<EvPickResumeToLPregraspP3>();
+      // Default: start pregrasp stage (single pregrasp move state).
+      this->template postEvent<EvPickResumeToLPregrasp>();
     }
   }
 };

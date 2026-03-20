@@ -61,16 +61,19 @@ struct SmJeArmPcbInspection : public smacc2::SmaccStateMachineBase<SmJeArmPcbIns
     this->setGlobalSMData(
       std::string(sm_data::kActivateResumeSubstateId),
       std::string(sm_data::kActivateSubstateP1));
-    this->setGlobalSMData(
-      std::string(sm_data::kActivateDelayNextSubstateId),
-      std::string(sm_data::kActivateSubstateP1));
+      this->setGlobalSMData(std::string(sm_data::kBackToIdleResumeFromPause), false);
+      this->setGlobalSMData(
+        std::string(sm_data::kActivateDelayNextSubstateId),
+        std::string(sm_data::kActivateSubstateP1));
     this->setGlobalSMData(std::string(sm_data::kWorkResumeSubstateId), std::string(sm_data::kWorkSubstatePick));
     this->setGlobalSMData(std::string(sm_data::kPickResumeFromPause), false);
     this->setGlobalSMData(std::string(sm_data::kPickResumeSubstateId), std::string(sm_data::kPickSubstateLPregrasp));
     this->setGlobalSMData(std::string(sm_data::kPickDelayNextSubstateId), std::string(sm_data::kPickSubstateGripperOpen));
+    this->setGlobalSMData(std::string(sm_data::kPlaceResumeFromPause), false);
+    this->setGlobalSMData(std::string(sm_data::kPlaceResumeSubstateId), std::string(sm_data::kPlaceSubstateLPregrasp));
     this->setGlobalSMData(std::string(sm_data::kPcbPresent), false);
-    this->setGlobalSMData(std::string(sm_data::kLeftSlotFree), true);
-    this->setGlobalSMData(std::string(sm_data::kRightSlotFree), true);
+    this->setGlobalSMData(std::string(sm_data::kLeftSlotFree), false);
+    this->setGlobalSMData(std::string(sm_data::kRightSlotFree), false);
     this->setGlobalSMData(std::string(sm_data::kPcbTargetFrameId), std::string("base_link"));
     this->setGlobalSMData(std::string(sm_data::kPcbTargetX), -0.38223850462518716);
     this->setGlobalSMData(std::string(sm_data::kPcbTargetY), 0.17516332117030306);
@@ -79,7 +82,23 @@ struct SmJeArmPcbInspection : public smacc2::SmaccStateMachineBase<SmJeArmPcbIns
     this->setGlobalSMData(std::string(sm_data::kPcbTargetQy), 0.4299463000132024);
     this->setGlobalSMData(std::string(sm_data::kPcbTargetQz), -0.5282853654249783);
     this->setGlobalSMData(std::string(sm_data::kPcbTargetQw), -0.4501993591909244);
-    this->setGlobalSMData(std::string(sm_data::kWaitTimeoutSec), 10.0);
+    this->setGlobalSMData(std::string(sm_data::kPlaceTargetFrameId), std::string("base_link"));
+    this->setGlobalSMData(std::string(sm_data::kPlaceTargetX), -0.4494);
+    this->setGlobalSMData(std::string(sm_data::kPlaceTargetY), 0.3586);
+    this->setGlobalSMData(std::string(sm_data::kPlaceTargetZ), -0.0047);
+    this->setGlobalSMData(std::string(sm_data::kPlaceTargetQx), 0.0048);
+    this->setGlobalSMData(std::string(sm_data::kPlaceTargetQy), -0.7067);
+    this->setGlobalSMData(std::string(sm_data::kPlaceTargetQz), -0.0125);
+    this->setGlobalSMData(std::string(sm_data::kPlaceTargetQw), 0.7074);
+    this->setGlobalSMData(std::string(sm_data::kWaitResourcesPoseFrameId), std::string("base_link"));
+    this->setGlobalSMData(std::string(sm_data::kWaitResourcesPoseX), -0.3905);
+    this->setGlobalSMData(std::string(sm_data::kWaitResourcesPoseY), 0.2227);
+    this->setGlobalSMData(std::string(sm_data::kWaitResourcesPoseZ), -0.0200);
+    this->setGlobalSMData(std::string(sm_data::kWaitResourcesPoseQx), -0.5480);
+    this->setGlobalSMData(std::string(sm_data::kWaitResourcesPoseQy), -0.4517);
+    this->setGlobalSMData(std::string(sm_data::kWaitResourcesPoseQz), 0.4950);
+    this->setGlobalSMData(std::string(sm_data::kWaitResourcesPoseQw), 0.5007);
+    this->setGlobalSMData(std::string(sm_data::kWaitTimeoutSec), 120.0);
     this->setGlobalSMData(std::string(sm_data::kWorkCycleSec), 2.0);
     this->setGlobalSMData(std::string(sm_data::kBackHomeSec), 1.5);
     this->setGlobalSMData(std::string(sm_data::kSharedDelaySec), 0.6);
@@ -117,6 +136,7 @@ struct SmJeArmPcbInspection : public smacc2::SmaccStateMachineBase<SmJeArmPcbIns
 
 #include "states/st_idle.hpp"
 #include "states/st_activate.hpp"
+#include "states/st_back_to_idle.hpp"
 #include "states/st_wait_resources.hpp"
 #include "states/st_work.hpp"
 #include "states/st_back.hpp"

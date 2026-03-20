@@ -30,7 +30,7 @@ struct StPause : smacc2::SmaccState<StPause, SmJeArmPcbInspection>
   { 
     std::string resumeState = sm_data::kWaitResourcesState;
     std::string workSubstate = sm_data::kWorkSubstatePick;
-    std::string pickSubstate = sm_data::kPickSubstateLPregraspP1;
+    std::string pickSubstate = sm_data::kPickSubstateLPregrasp;
     std::string pauseReason;
 
     this->getGlobalSMData(std::string(sm_data::kResumeStateId), resumeState);

@@ -29,6 +29,9 @@ struct EvResourcesUnavailable : sc::event<EvResourcesUnavailable> {};
 // BACK -> WAIT_RESOURCES
 struct EvBackDone : sc::event<EvBackDone> {};
 
+// WAIT_RESOURCES -> BACK_TO_IDLE (reverse activate)
+struct EvBackToIdleRequested : sc::event<EvBackToIdleRequested> {};
+
 // PAUSE -> WAIT_RESOURCES / WORK (根据resume_state_id)
 struct EvKeyResume : sc::event<EvKeyResume> {};
 
@@ -43,6 +46,12 @@ struct EvResumeToWaitResources : sc::event<EvResumeToWaitResources> {};
 struct EvResumeToWork : sc::event<EvResumeToWork> {};
 struct EvResumeToBack : sc::event<EvResumeToBack> {};
 struct EvResumeToActivate : sc::event<EvResumeToActivate> {};
+struct EvResumeToBackToIdle : sc::event<EvResumeToBackToIdle> {};
+
+// BACK_TO_IDLE 内部恢复路由事件
+struct EvBackToIdleResumeToP2 : sc::event<EvBackToIdleResumeToP2> {};
+struct EvBackToIdleResumeToP1 : sc::event<EvBackToIdleResumeToP1> {};
+struct EvBackToIdleDone : sc::event<EvBackToIdleDone> {};
 
 // ACTIVATE 内部恢复路由事件
 struct EvActivateResumeToP1 : sc::event<EvActivateResumeToP1> {};
@@ -66,17 +75,23 @@ struct EvWorkResumeToPick : sc::event<EvWorkResumeToPick> {};
 struct EvWorkResumeToInspect : sc::event<EvWorkResumeToInspect> {};
 struct EvWorkResumeToSelectBin : sc::event<EvWorkResumeToSelectBin> {};
 struct EvWorkResumeToPlace : sc::event<EvWorkResumeToPlace> {};
-struct EvWorkResumeToPlaceDecision : sc::event<EvWorkResumeToPlaceDecision> {};
 
 // PICK 内部恢复路由事件
-struct EvPickResumeToLPregrasp : sc::event<EvPickResumeToLPregrasp> {};  // fallback → P1
+struct EvPickResumeToLPregrasp : sc::event<EvPickResumeToLPregrasp> {};
 struct EvPickResumeToLPregraspP1 : sc::event<EvPickResumeToLPregraspP1> {};
 struct EvPickResumeToLPregraspP2 : sc::event<EvPickResumeToLPregraspP2> {};
-struct EvPickResumeToLPregraspP3 : sc::event<EvPickResumeToLPregraspP3> {};
 struct EvPickResumeToGripperOpen : sc::event<EvPickResumeToGripperOpen> {};
 struct EvPickResumeToCartesianDown : sc::event<EvPickResumeToCartesianDown> {};
 struct EvPickResumeToGripperClose : sc::event<EvPickResumeToGripperClose> {};
 struct EvPickResumeToCartesianUp : sc::event<EvPickResumeToCartesianUp> {};
 struct EvPickResumeToLRetreat : sc::event<EvPickResumeToLRetreat> {};
+
+// PLACE 内部恢复路由事件
+struct EvPlaceResumeToPre : sc::event<EvPlaceResumeToPre> {};
+struct EvPlaceResumeToMove : sc::event<EvPlaceResumeToMove> {};
+struct EvPlaceResumeToRelease : sc::event<EvPlaceResumeToRelease> {};
+struct EvPlaceResumeToRetreat : sc::event<EvPlaceResumeToRetreat> {};
+struct EvPlaceResumeToClose : sc::event<EvPlaceResumeToClose> {};
+struct EvPlaceReleased : sc::event<EvPlaceReleased> {};
 
 }  // namespace je_arm_pcb_inspection_sm

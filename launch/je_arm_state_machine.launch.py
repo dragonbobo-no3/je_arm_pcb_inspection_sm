@@ -86,7 +86,7 @@ def generate_launch_description():
     )
 
     sm_node = TimerAction(
-        period=5.0,  # fake mode: move_group starts at t=2s and needs ~8s to init
+        period=2.0,  # fake mode: move_group starts at t=2s and needs ~2s to init
         actions=[
             Node(
                 package="je_arm_pcb_inspection_sm",
