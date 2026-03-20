@@ -37,6 +37,14 @@ struct StIdle : smacc2::SmaccState<StIdle, SmJeArmPcbInspection>
 
   void onExit() 
   { 
+    // Initialize activate resume pointer when leaving Idle to start work.
+    this->setGlobalSMData(
+      std::string(sm_data::kActivateResumeSubstateId),
+      std::string(sm_data::kActivateSubstateP1));
+    this->setGlobalSMData(
+      std::string(sm_data::kActivateDelayNextSubstateId),
+      std::string(sm_data::kActivateSubstateP1));
+
     RCLCPP_DEBUG(log_utils::bizLogger(), "[%s] EXIT IDLE", log_utils::bjtNowString().c_str());
   }
 };

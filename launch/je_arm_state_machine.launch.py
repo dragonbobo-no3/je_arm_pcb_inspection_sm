@@ -24,8 +24,9 @@ def generate_launch_description():
         "CONDA_PROMPT_MODIFIER": "",
         "CONDA_SHLVL": "",
         "LD_PRELOAD": "",
-        "TZ": "Asia/Shanghai",
+        "TZ": "Asia/Shenzhen",
         "RCUTILS_CONSOLE_OUTPUT_FORMAT": "[{severity}] [{name}]: {message}",
+        "ROS_DOMAIN_ID": "199",  # Match clean_restart.sh domain ID
         "PATH": ["/usr/bin:/bin:/usr/sbin:/sbin:", EnvironmentVariable("PATH", default_value="")],
         "LD_LIBRARY_PATH": [
             "/opt/ros/humble/lib:/usr/lib/x86_64-linux-gnu:",
@@ -62,7 +63,15 @@ def generate_launch_description():
         'manage_controllers': True,
         'allowed_execution_timeout_scaling': 100.0,
         'execution_duration_monitoring': False,
+        'allowed_goal_duration_margin': 5.0,
+        'action_monitor_rate': 10.0,
     }
+    
+    # Increase start state tolerance to handle position drift between planning and execution
+    moveit_params['start_state_max_bounds_error'] = 0.05  # ← 从 0.01 增加到 0.05
+    
+    # Allow approximate solutions to handle minor state divergence between planning and execution
+    moveit_params['allow_approximate_solution'] = True
 
     keyboard_server = ExecuteProcess(
         cmd=[
@@ -73,10 +82,11 @@ def generate_launch_description():
             (
                 "unset PYTHONPATH PYTHONHOME CONDA_PREFIX CONDA_DEFAULT_ENV CONDA_PROMPT_MODIFIER CONDA_SHLVL && "
                 "export PATH=/usr/bin:/bin:/usr/sbin:/sbin:$PATH && "
+                "export ROS_DOMAIN_ID=199 && "
                 "source /opt/ros/humble/setup.bash && "
-                "source /home/agx/ros2_ws/install/setup.bash && "
+                "source /home/test/ros2_ws/install/setup.bash && "
                 "echo 'SMACC2 keyboard ready: s(start), n(next step), w(loop), p(pause), r(resume), b(back), f(fault), u(resource-unavailable)' && "
-                "/usr/bin/python3 /home/agx/ros2_ws/install/cl_keyboard/lib/cl_keyboard/keyboard_server_node.py; "
+                "/usr/bin/python3 /home/test/ros2_ws/install/cl_keyboard/lib/cl_keyboard/keyboard_server_node.py; "
                 "echo; echo 'keyboard_server_node exited'; "
                 "read -r -n 1 -s -p 'Press any key to close...'"
             ),
@@ -86,7 +96,7 @@ def generate_launch_description():
     )
 
     sm_node = TimerAction(
-        period=2.0,  # fake mode: move_group starts at t=2s and needs ~2s to init
+        period=5.0,  # Short delay since move_group is already running
         actions=[
             Node(
                 package="je_arm_pcb_inspection_sm",

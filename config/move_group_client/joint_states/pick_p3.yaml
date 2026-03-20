@@ -1,8 +1,8 @@
 joint_states:
-  joint1: -0.25082
-  joint2: -0.97738
-  joint3: 0.72503
-  joint4: 0.75089
-  joint5: -0.25453
-  joint6: -1.36815
-  joint7: 1.25563
+  joint1: 0.05515
+  joint2: -0.66980
+  joint3: 1.14801
+  joint4: 1.07973
+  joint5: -0.92877
+  joint6: -1.42668
+  joint7: 0.28524

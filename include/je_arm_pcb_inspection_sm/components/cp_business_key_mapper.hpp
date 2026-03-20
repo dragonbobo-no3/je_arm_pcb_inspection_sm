@@ -30,8 +30,10 @@ public:
   template <typename TOrthogonal, typename TClient>
   void onComponentInitialization()
   {
+    RCLCPP_WARN(getLogger(), "CpBusinessKeyMapper::onComponentInitialization - STARTING");
     cl_keyboard::components::CpKeyboardListener1 * keyboardListener;
     this->requiresComponent(keyboardListener);
+    RCLCPP_WARN(getLogger(), "CpBusinessKeyMapper - got keyboard listener, registering callback");
     keyboardListener->OnKeyPress(&CpBusinessKeyMapper::onKeyPress, this);
 
     auto node = this->getNode();
@@ -50,6 +52,7 @@ public:
     auto * currentState = this->getStateMachine()->getCurrentState();
     if (currentState == nullptr)
     {
+      RCLCPP_WARN(getLogger(), "CpBusinessKeyMapper::onKeyPress - currentState is nullptr");
       return;
     }
 
@@ -83,9 +86,15 @@ public:
 
     if (stateName.find("StIdle") != std::string::npos)
     {
-      if (key == 's')
+      RCLCPP_WARN(getLogger(), "  -> State matched: StIdle");
+      if (key == 's' || key == 'S')
       {
+        RCLCPP_WARN(getLogger(), "  -> Key matched: 's' or 'S', posting EvStartWork");
         this->postEvent<EvStartWork>();
+      }
+      else
+      {
+        RCLCPP_WARN(getLogger(), "  -> Key not matched: got '%c', expected 's'", key);
       }
       return;
     }
