@@ -26,7 +26,6 @@ def generate_launch_description():
         "LD_PRELOAD": "",
         "TZ": "Asia/Shenzhen",
         "RCUTILS_CONSOLE_OUTPUT_FORMAT": "[{severity}] [{name}]: {message}",
-        "ROS_DOMAIN_ID": "199",  # Match clean_restart.sh domain ID
         "PATH": ["/usr/bin:/bin:/usr/sbin:/sbin:", EnvironmentVariable("PATH", default_value="")],
         "LD_LIBRARY_PATH": [
             "/opt/ros/humble/lib:/usr/lib/x86_64-linux-gnu:",
@@ -82,11 +81,10 @@ def generate_launch_description():
             (
                 "unset PYTHONPATH PYTHONHOME CONDA_PREFIX CONDA_DEFAULT_ENV CONDA_PROMPT_MODIFIER CONDA_SHLVL && "
                 "export PATH=/usr/bin:/bin:/usr/sbin:/sbin:$PATH && "
-                "export ROS_DOMAIN_ID=199 && "
                 "source /opt/ros/humble/setup.bash && "
-                "source /home/test/ros2_ws/install/setup.bash && "
+                "source /home/agx/ros2_ws/install/setup.bash && "
                 "echo 'SMACC2 keyboard ready: s(start), n(next step), w(loop), p(pause), r(resume), b(back), f(fault), u(resource-unavailable)' && "
-                "/usr/bin/python3 /home/test/ros2_ws/install/cl_keyboard/lib/cl_keyboard/keyboard_server_node.py; "
+                "/usr/bin/python3 /home/agx/ros2_ws/install/cl_keyboard/lib/cl_keyboard/keyboard_server_node.py; "
                 "echo; echo 'keyboard_server_node exited'; "
                 "read -r -n 1 -s -p 'Press any key to close...'"
             ),

@@ -1,0 +1,26 @@
+gripper_common:
+  force_position_mode: true
+  topic: "/end_effector_cmd_lr"
+  left_valid: true
+  right_valid: false
+
+gripper_commands:
+  pick_open:
+    mode: position
+    position: 1.0
+    preset: 0
+
+  pick_close:
+    mode: position
+    position: 0.0
+    preset: 0
+
+  place_open:
+    mode: position
+    position: 1.0
+    preset: 0
+
+  place_close:
+    mode: position
+    position: 0.0
+    preset: 0

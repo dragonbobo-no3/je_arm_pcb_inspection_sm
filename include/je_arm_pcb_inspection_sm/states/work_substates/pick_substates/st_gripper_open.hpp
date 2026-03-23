@@ -3,8 +3,12 @@
 #include <smacc2/smacc.hpp>
 #include <rclcpp/rclcpp.hpp>
 
+#include <cl_moveit2z/client_behaviors/cb_ctrl_gripper.hpp>
+
 #include "je_arm_pcb_inspection_sm/events.hpp"
+#include "je_arm_pcb_inspection_sm/orthogonals/or_arm.hpp"
 #include "je_arm_pcb_inspection_sm/sm_data.hpp"
+#include "je_arm_pcb_inspection_sm/utils/gripper_command_loader.hpp"
 
 namespace je_arm_pcb_inspection_sm
 {
@@ -26,16 +30,30 @@ struct StGripperOpen : smacc2::SmaccState<StGripperOpen, StPick>
   using SmaccState::SmaccState;
 
   typedef boost::mpl::list<
+    smacc2::Transition<smacc2::EvCbSuccess<cl_moveit2z::CbCtrlGripper, OrArm>, StCartesianDown>,
+    smacc2::Transition<smacc2::EvCbFailure<cl_moveit2z::CbCtrlGripper, OrArm>, StPause>,
     smacc2::Transition<EvGripperOpened, StCartesianDown>,
     smacc2::Transition<EvPauseRequested, StPause>
   > reactions;
+
+  static void staticConfigure()
+  {
+    const auto cfg = je_arm_pcb_inspection_sm::utils::loadGripperCommandConfig("pick_open");
+    configure_orthogonal<OrArm, cl_moveit2z::CbCtrlGripper>(
+      cfg.mode,
+      cfg.position,
+      cfg.preset,
+      cfg.leftValid,
+      cfg.rightValid,
+      cfg.topic);
+  }
 
   void onEntry()
   {
     this->setGlobalSMData(
       std::string(sm_data::kPickResumeSubstateId),
       std::string(sm_data::kPickSubstateGripperOpen));
-    RCLCPP_INFO(getLogger(), "WORK::PICK::GRIPPER_OPEN - press 'n' => EvGripperOpened");
+    RCLCPP_INFO(getLogger(), "WORK::PICK::GRIPPER_OPEN - executing CbCtrlGripper POSITION=1.0 [bypass: 'n']");
   }
 };
 
