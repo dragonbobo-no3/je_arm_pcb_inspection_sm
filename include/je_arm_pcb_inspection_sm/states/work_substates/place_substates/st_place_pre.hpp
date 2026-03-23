@@ -31,18 +31,18 @@ struct StPlaceLPregrasp : smacc2::SmaccState<StPlaceLPregrasp, StPlace>
 
   typedef boost::mpl::list<
     smacc2::Transition<
-      smacc2::EvCbSuccess<cl_moveit2z::CbMoveEndEffectorSeeded, OrArm>,
+      smacc2::EvCbSuccess<cl_moveit2z::CbMoveEndEffectorLinearSeeded, OrArm>,
       StPlaceCartesianDown>,
     smacc2::Transition<
-      smacc2::EvCbFailure<cl_moveit2z::CbMoveEndEffectorSeeded, OrArm>,
+      smacc2::EvCbFailure<cl_moveit2z::CbMoveEndEffectorLinearSeeded, OrArm>,
       StPause>,
     smacc2::Transition<EvPauseRequested, StPause>
   > reactions;
 
   static void staticConfigure()
   {
-    configure_orthogonal_runtime<OrArm, cl_moveit2z::CbMoveEndEffectorSeeded>(
-      [](cl_moveit2z::CbMoveEndEffectorSeeded & bh, StPlaceLPregrasp & state)
+    configure_orthogonal_runtime<OrArm, cl_moveit2z::CbMoveEndEffectorLinearSeeded>(
+      [](cl_moveit2z::CbMoveEndEffectorLinearSeeded & bh, StPlaceLPregrasp & state)
       {
         bh.tip_link_ = "Link7";
         bh.planningTimeSec_ = 1.0;

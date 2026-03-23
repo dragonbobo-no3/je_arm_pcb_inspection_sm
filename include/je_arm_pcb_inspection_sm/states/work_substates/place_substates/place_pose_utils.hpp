@@ -17,13 +17,13 @@ geometry_msgs::msg::PoseStamped computePlacePose(TState & state, double xOffset)
   auto * stateMachine = &state.getStateMachine();
 
   std::string frameId = "base_link";
-  double baseX = -0.4494;
-  double baseY = 0.3586;
-  double baseZ = -0.0047;
-  double baseQx = 0.0048;
-  double baseQy = -0.7067;
-  double baseQz = -0.0125;
-  double baseQw = 0.7074;
+  double baseX = -0.3648;
+  double baseY = 0.2738;
+  double baseZ = 0.0941;
+  double baseQx = -0.5702;
+  double baseQy = -0.4497;
+  double baseQz = 0.4405;
+  double baseQw = 0.5278;
 
   stateMachine->getGlobalSMData(std::string(sm_data::kPlaceTargetFrameId), frameId);
   stateMachine->getGlobalSMData(std::string(sm_data::kPlaceTargetX), baseX);
