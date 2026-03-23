@@ -15,6 +15,7 @@ namespace je_arm_pcb_inspection_sm
 {
 
 struct StPause;
+struct StDelay;
 
 namespace work_substates
 {
@@ -33,7 +34,7 @@ struct StCartesianUp : smacc2::SmaccState<StCartesianUp, StPick>
   typedef boost::mpl::list<
     smacc2::Transition<
       smacc2::EvCbSuccess<cl_moveit2z::CbMoveEndEffectorLinearSeeded, OrArm>,
-      StLRetreat>,
+      StDelay>,
     smacc2::Transition<
       smacc2::EvCbFailure<cl_moveit2z::CbMoveEndEffectorLinearSeeded, OrArm>,
       StPause>,
@@ -88,6 +89,18 @@ struct StCartesianUp : smacc2::SmaccState<StCartesianUp, StPick>
     this->setGlobalSMData(
       std::string(sm_data::kPickResumeSubstateId),
       std::string(sm_data::kPickSubstateCartesianUp));
+    this->setGlobalSMData(
+      std::string(sm_data::kPickDelayNextSubstateId),
+      std::string(sm_data::kPickSubstateLRetreat));
+    this->setGlobalSMData(
+      std::string(sm_data::kResumeStateId),
+      std::string(sm_data::kWorkState));
+    this->setGlobalSMData(
+      std::string(sm_data::kWorkResumeSubstateId),
+      std::string(sm_data::kWorkSubstatePick));
+    this->setGlobalSMData(
+      std::string(sm_data::kWorkDelayNextSubstateId),
+      std::string(sm_data::kWorkSubstatePick));
     RCLCPP_INFO(getLogger(), "WORK::PICK::CARTESIAN_UP - executing linear seeded up motion using pick_offset");
   }
 };

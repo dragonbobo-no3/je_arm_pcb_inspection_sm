@@ -141,6 +141,9 @@ struct StLPregraspMove : smacc2::SmaccState<StLPregraspMove, StLPregrasp>
     this->setGlobalSMData(
       std::string(sm_data::kWorkResumeSubstateId),
       std::string(sm_data::kWorkSubstatePick));
+    this->setGlobalSMData(
+      std::string(sm_data::kWorkDelayNextSubstateId),
+      std::string(sm_data::kWorkSubstatePick));
     RCLCPP_INFO(
       getLogger(),
       "WORK::PICK::L_PREGRASP::MOVE - linear move to simulated PCBA end-effector pose [bypass: 'n']");

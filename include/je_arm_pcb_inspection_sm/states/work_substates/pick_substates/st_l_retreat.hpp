@@ -14,6 +14,7 @@ namespace je_arm_pcb_inspection_sm
 {
 
 struct StPause;
+struct StDelay;
 
 namespace work_substates
 {
@@ -31,7 +32,7 @@ struct StLRetreat : smacc2::SmaccState<StLRetreat, StPick>
   typedef boost::mpl::list<
     smacc2::Transition<
       smacc2::EvCbSuccess<cl_moveit2z::CbMoveEndEffectorLinearSeeded, OrArm>,
-      StInspect>,
+      StDelay>,
     smacc2::Transition<
       smacc2::EvCbFailure<cl_moveit2z::CbMoveEndEffectorLinearSeeded, OrArm>,
       StPause>,
@@ -76,6 +77,15 @@ struct StLRetreat : smacc2::SmaccState<StLRetreat, StPick>
     this->setGlobalSMData(
       std::string(sm_data::kPickResumeSubstateId),
       std::string(sm_data::kPickSubstateLRetreat));
+    this->setGlobalSMData(
+      std::string(sm_data::kWorkDelayNextSubstateId),
+      std::string(sm_data::kWorkSubstateInspect));
+    this->setGlobalSMData(
+      std::string(sm_data::kResumeStateId),
+      std::string(sm_data::kWorkState));
+    this->setGlobalSMData(
+      std::string(sm_data::kWorkResumeSubstateId),
+      std::string(sm_data::kWorkSubstatePick));
     RCLCPP_INFO(getLogger(), "WORK::PICK::L_RETREAT - executing linear move to WAIT_RESOURCES pose");
   }
 };

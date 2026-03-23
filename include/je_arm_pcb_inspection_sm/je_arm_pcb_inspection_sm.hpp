@@ -66,11 +66,13 @@ struct SmJeArmPcbInspection : public smacc2::SmaccStateMachineBase<SmJeArmPcbIns
         std::string(sm_data::kActivateDelayNextSubstateId),
         std::string(sm_data::kActivateSubstateP1));
     this->setGlobalSMData(std::string(sm_data::kWorkResumeSubstateId), std::string(sm_data::kWorkSubstatePick));
+    this->setGlobalSMData(std::string(sm_data::kWorkDelayNextSubstateId), std::string(sm_data::kWorkSubstatePick));
     this->setGlobalSMData(std::string(sm_data::kPickResumeFromPause), false);
     this->setGlobalSMData(std::string(sm_data::kPickResumeSubstateId), std::string(sm_data::kPickSubstateLPregrasp));
     this->setGlobalSMData(std::string(sm_data::kPickDelayNextSubstateId), std::string(sm_data::kPickSubstateGripperOpen));
     this->setGlobalSMData(std::string(sm_data::kPlaceResumeFromPause), false);
     this->setGlobalSMData(std::string(sm_data::kPlaceResumeSubstateId), std::string(sm_data::kPlaceSubstateLPregrasp));
+    this->setGlobalSMData(std::string(sm_data::kPlaceDelayNextSubstateId), std::string(sm_data::kPlaceSubstateLPregrasp));
     this->setGlobalSMData(std::string(sm_data::kPcbPresent), false);
     this->setGlobalSMData(std::string(sm_data::kLeftSlotFree), false);
     this->setGlobalSMData(std::string(sm_data::kRightSlotFree), false);

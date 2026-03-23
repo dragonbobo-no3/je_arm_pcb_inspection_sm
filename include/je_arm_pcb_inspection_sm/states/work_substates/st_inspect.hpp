@@ -16,6 +16,7 @@ namespace je_arm_pcb_inspection_sm
 
 struct StWork;
 struct StPause;
+struct StDelay;
 
 namespace work_substates
 {
@@ -27,7 +28,7 @@ struct StInspect : smacc2::SmaccState<StInspect, StWork>
   using SmaccState::SmaccState;
 
   typedef boost::mpl::list<
-    smacc2::Transition<smacc2::EvCbSuccess<cl_moveit2z::CbMoveJoints, OrArm>, StSelectBin>,
+    smacc2::Transition<smacc2::EvCbSuccess<cl_moveit2z::CbMoveJoints, OrArm>, StDelay>,
     smacc2::Transition<smacc2::EvCbFailure<cl_moveit2z::CbMoveJoints, OrArm>, StPause>,
     smacc2::Transition<EvPauseRequested, StPause>
   > reactions;
@@ -58,6 +59,12 @@ struct StInspect : smacc2::SmaccState<StInspect, StWork>
     this->setGlobalSMData(
       std::string(sm_data::kWorkResumeSubstateId),
       std::string(sm_data::kWorkSubstateInspect));
+    this->setGlobalSMData(
+      std::string(sm_data::kWorkDelayNextSubstateId),
+      std::string(sm_data::kWorkSubstateSelectBin));
+    this->setGlobalSMData(
+      std::string(sm_data::kResumeStateId),
+      std::string(sm_data::kWorkState));
     RCLCPP_INFO(getLogger(), "WORK::INSPECT onEntry - executing joint move to inspection pose");
   }
 };

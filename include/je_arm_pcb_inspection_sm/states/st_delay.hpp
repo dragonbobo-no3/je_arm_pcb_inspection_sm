@@ -48,11 +48,24 @@ struct StDelay : smacc2::SmaccState<StDelay, SmJeArmPcbInspection>
 
     std::string workSubstate = sm_data::kWorkSubstatePick;
     this->getGlobalSMData(std::string(sm_data::kWorkResumeSubstateId), workSubstate);
-    if (resumeState_ == sm_data::kWorkState && workSubstate == sm_data::kWorkSubstatePick)
+    if (resumeState_ == sm_data::kWorkState)
     {
-      std::string pickNext = sm_data::kPickSubstateLPregrasp;
-      this->getGlobalSMData(std::string(sm_data::kPickDelayNextSubstateId), pickNext);
-      this->setGlobalSMData(std::string(sm_data::kPickResumeSubstateId), pickNext);
+      if (workSubstate == sm_data::kWorkSubstatePick)
+      {
+        std::string pickNext = sm_data::kPickSubstateLPregrasp;
+        this->getGlobalSMData(std::string(sm_data::kPickDelayNextSubstateId), pickNext);
+        this->setGlobalSMData(std::string(sm_data::kPickResumeSubstateId), pickNext);
+      }
+      else if (workSubstate == sm_data::kWorkSubstatePlace)
+      {
+        std::string placeNext = sm_data::kPlaceSubstateLPregrasp;
+        this->getGlobalSMData(std::string(sm_data::kPlaceDelayNextSubstateId), placeNext);
+        this->setGlobalSMData(std::string(sm_data::kPlaceResumeSubstateId), placeNext);
+      }
+
+      std::string workNext = workSubstate;
+      this->getGlobalSMData(std::string(sm_data::kWorkDelayNextSubstateId), workNext);
+      this->setGlobalSMData(std::string(sm_data::kWorkResumeSubstateId), workNext);
     }
 
     RCLCPP_INFO(

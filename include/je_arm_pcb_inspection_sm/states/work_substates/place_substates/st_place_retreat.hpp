@@ -14,6 +14,7 @@ namespace je_arm_pcb_inspection_sm
 {
 
 struct StPause;
+struct StDelay;
 
 namespace work_substates
 {
@@ -32,7 +33,7 @@ struct StPlaceCartesianUp : smacc2::SmaccState<StPlaceCartesianUp, StPlace>
   typedef boost::mpl::list<
     smacc2::Transition<
       smacc2::EvCbSuccess<cl_moveit2z::CbMoveEndEffectorLinearSeeded, OrArm>,
-      StPlaceGripperClose>,
+      StDelay>,
     smacc2::Transition<
       smacc2::EvCbFailure<cl_moveit2z::CbMoveEndEffectorLinearSeeded, OrArm>,
       StPause>,
@@ -56,6 +57,18 @@ struct StPlaceCartesianUp : smacc2::SmaccState<StPlaceCartesianUp, StPlace>
     this->setGlobalSMData(
       std::string(sm_data::kPlaceResumeSubstateId),
       std::string(sm_data::kPlaceSubstateCartesianUp));
+    this->setGlobalSMData(
+      std::string(sm_data::kPlaceDelayNextSubstateId),
+      std::string(sm_data::kPlaceSubstateGripperClose));
+    this->setGlobalSMData(
+      std::string(sm_data::kResumeStateId),
+      std::string(sm_data::kWorkState));
+    this->setGlobalSMData(
+      std::string(sm_data::kWorkResumeSubstateId),
+      std::string(sm_data::kWorkSubstatePlace));
+    this->setGlobalSMData(
+      std::string(sm_data::kWorkDelayNextSubstateId),
+      std::string(sm_data::kWorkSubstatePlace));
     RCLCPP_INFO(getLogger(), "WORK::PLACE::CARTESIAN_UP - moving to place pose with x + 0.10m");
   }
 };

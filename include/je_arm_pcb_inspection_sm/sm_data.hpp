@@ -30,6 +30,7 @@ inline constexpr const char * kWorkSubstatePick = "WORK_PICK";
 inline constexpr const char * kWorkSubstateInspect = "WORK_INSPECT";
 inline constexpr const char * kWorkSubstateSelectBin = "WORK_SELECT_BIN";
 inline constexpr const char * kWorkSubstatePlace = "WORK_PLACE";
+inline constexpr const char * kWorkDelayNextSubstateId = "work_delay_next_substate_id";
 
 inline constexpr const char * kPickResumeFromPause = "pick_resume_from_pause";
 inline constexpr const char * kPickResumeSubstateId = "pick_resume_substate_id";
@@ -50,6 +51,7 @@ inline constexpr const char * kPlaceSubstateCartesianDown = "PLACE_CARTESIAN_DOW
 inline constexpr const char * kPlaceSubstateGripperOpen = "PLACE_GRIPPER_OPEN";
 inline constexpr const char * kPlaceSubstateCartesianUp = "PLACE_CARTESIAN_UP";
 inline constexpr const char * kPlaceSubstateGripperClose = "PLACE_GRIPPER_CLOSE";
+inline constexpr const char * kPlaceDelayNextSubstateId = "place_delay_next_substate_id";
 
 inline constexpr const char * kPcbPresent = "pcb_present";
 inline constexpr const char * kLeftSlotFree = "left_slot_free";

@@ -14,6 +14,7 @@ namespace je_arm_pcb_inspection_sm
 {
 
 struct StPause;
+struct StDelay;
 
 namespace work_substates
 {
@@ -55,6 +56,18 @@ struct StPlaceLPregrasp : smacc2::SmaccState<StPlaceLPregrasp, StPlace>
     this->setGlobalSMData(
       std::string(sm_data::kPlaceResumeSubstateId),
       std::string(sm_data::kPlaceSubstateLPregrasp));
+    this->setGlobalSMData(
+      std::string(sm_data::kPlaceDelayNextSubstateId),
+      std::string(sm_data::kPlaceSubstateCartesianDown));
+    this->setGlobalSMData(
+      std::string(sm_data::kResumeStateId),
+      std::string(sm_data::kWorkState));
+    this->setGlobalSMData(
+      std::string(sm_data::kWorkResumeSubstateId),
+      std::string(sm_data::kWorkSubstatePlace));
+    this->setGlobalSMData(
+      std::string(sm_data::kWorkDelayNextSubstateId),
+      std::string(sm_data::kWorkSubstatePlace));
     RCLCPP_INFO(getLogger(), "WORK::PLACE::L_PREGRASP - moving to place pose with x + 0.10m");
   }
 };
