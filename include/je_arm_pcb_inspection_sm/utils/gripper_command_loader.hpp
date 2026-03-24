@@ -17,6 +17,8 @@ struct GripperCommandConfig
   int mode{je_software::msg::EndEffectorCommand::MODE_POSITION};
   double position{0.0};
   int preset{0};
+  std::string command;
+  double torque{0.0};
   bool forcePositionMode{true};
   bool leftValid{true};
   bool rightValid{false};
@@ -59,6 +61,10 @@ inline int parseGripperMode(const YAML::Node & node, int defaultMode)
     if (modeString == "preset")
     {
       return je_software::msg::EndEffectorCommand::MODE_PRESET;
+    }
+    if (modeString == "torque")
+    {
+      return je_software::msg::EndEffectorCommand::MODE_TORQUE;
     }
 
     return node.as<int>();
@@ -112,6 +118,14 @@ inline GripperCommandConfig loadGripperCommandConfig(const std::string & command
       if (command["preset"])
       {
         cfg.preset = command["preset"].as<int>();
+      }
+      if (command["command"])
+      {
+        cfg.command = command["command"].as<std::string>();
+      }
+      if (command["torque"])
+      {
+        cfg.torque = command["torque"].as<double>();
       }
       if (command["topic"])
       {

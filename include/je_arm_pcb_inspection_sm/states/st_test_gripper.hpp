@@ -55,11 +55,13 @@ struct StTestGripper : smacc2::SmaccState<StTestGripper, SmJeArmPcbInspection>
     RCLCPP_INFO(
       log_utils::bizLogger(),
       "[%s] ENTER TEST_GRIPPER - config loaded from test_gripper.yaml | "
-      "mode=%d, position=%.2f, preset=%d, left=%d, right=%d, topic='%s', timeout=%.2fs [bypass: 'n']",
+      "mode=%d, position=%.2f, preset=%d, command=%s, torque=%.2f, left=%d, right=%d, topic='%s', timeout=%.2fs [bypass: 'n']",
       log_utils::bjtNowString().c_str(),
       cfg.mode,
       cfg.position,
       cfg.preset,
+      cfg.command.c_str(),
+      cfg.torque,
       cfg.leftValid,
       cfg.rightValid,
       cfg.topic.c_str(),
@@ -87,6 +89,8 @@ struct StTestGripper : smacc2::SmaccState<StTestGripper, SmJeArmPcbInspection>
       cmd.mode = cfg.mode;
       cmd.position = cfg.position;
       cmd.preset = cfg.preset;
+      cmd.command = cfg.command;
+      cmd.torque = cfg.torque;
 
       cmd_lr.left_valid = cfg.leftValid;
       cmd_lr.right_valid = cfg.rightValid;
@@ -95,10 +99,13 @@ struct StTestGripper : smacc2::SmaccState<StTestGripper, SmJeArmPcbInspection>
 
       RCLCPP_INFO(
         log_utils::bizLogger(),
-        "[%s] Publishing gripper command: mode=%d, position=%.2f, left=%d, right=%d to '%s'",
+        "[%s] Publishing gripper command: mode=%d, position=%.2f, preset=%d, command=%s, torque=%.2f, left=%d, right=%d to '%s'",
         log_utils::bjtNowString().c_str(),
         cfg.mode,
         cfg.position,
+        cfg.preset,
+        cfg.command.c_str(),
+        cfg.torque,
         cfg.leftValid,
         cfg.rightValid,
         cfg.topic.c_str());

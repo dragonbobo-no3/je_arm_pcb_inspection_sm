@@ -20,6 +20,8 @@ struct TestGripperConfig
   int mode{je_software::msg::EndEffectorCommand::MODE_POSITION};
   double position{0.0};
   int preset{0};
+  std::string command;
+  double torque{0.0};
   bool leftValid{true};
   bool rightValid{false};
   std::string topic{"/end_effector_cmd_lr"};
@@ -59,6 +61,16 @@ inline TestGripperConfig loadTestGripperConfig()
       if (testGripper["preset"])
       {
         cfg.preset = testGripper["preset"].as<int>();
+      }
+
+      if (testGripper["command"])
+      {
+        cfg.command = testGripper["command"].as<std::string>();
+      }
+
+      if (testGripper["torque"])
+      {
+        cfg.torque = testGripper["torque"].as<double>();
       }
       
       if (testGripper["left_valid"])

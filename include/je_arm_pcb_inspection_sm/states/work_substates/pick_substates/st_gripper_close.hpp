@@ -39,7 +39,6 @@ struct StGripperClose : smacc2::SmaccState<StGripperClose, StPick>
   static void staticConfigure()
   {
     const auto cfg = je_arm_pcb_inspection_sm::utils::loadGripperCommandConfig("pick_close");
-    // 1.5 秒等待时间（无反馈，只是延迟）
     configure_orthogonal<OrArm, cl_moveit2z::CbCtrlGripper>(
       cfg.mode,
       cfg.position,
@@ -47,7 +46,11 @@ struct StGripperClose : smacc2::SmaccState<StGripperClose, StPick>
       cfg.leftValid,
       cfg.rightValid,
       cfg.topic,
-      1.5);  // timeout_sec: 1.5 秒
+      1.5,
+      "/joint_states_double_arm",
+      0.03,
+      cfg.command,
+      cfg.torque);
   }
 
   void onEntry()
@@ -55,7 +58,7 @@ struct StGripperClose : smacc2::SmaccState<StGripperClose, StPick>
     this->setGlobalSMData(
       std::string(sm_data::kPickResumeSubstateId),
       std::string(sm_data::kPickSubstateGripperClose));
-    RCLCPP_INFO(getLogger(), "WORK::PICK::GRIPPER_CLOSE - executing CbCtrlGripper POSITION=0.0 [bypass: 'n']");
+    RCLCPP_INFO(getLogger(), "WORK::PICK::GRIPPER_CLOSE - executing CbCtrlGripper from YAML [bypass: 'n']");
   }
 };
 

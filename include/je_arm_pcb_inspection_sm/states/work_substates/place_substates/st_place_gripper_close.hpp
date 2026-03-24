@@ -38,7 +38,6 @@ struct StPlaceGripperClose : smacc2::SmaccState<StPlaceGripperClose, StPlace>
   static void staticConfigure()
   {
     const auto cfg = je_arm_pcb_inspection_sm::utils::loadGripperCommandConfig("place_close");
-    // 1.5 秒等待时间（无反馈，只是延迟）
     configure_orthogonal<OrArm, cl_moveit2z::CbCtrlGripper>(
       cfg.mode,
       cfg.position,
@@ -46,7 +45,11 @@ struct StPlaceGripperClose : smacc2::SmaccState<StPlaceGripperClose, StPlace>
       cfg.leftValid,
       cfg.rightValid,
       cfg.topic,
-      1.5);  // timeout_sec: 1.5 秒
+      1.5,
+      "/joint_states_double_arm",
+      0.03,
+      cfg.command,
+      cfg.torque);
   }
 
   void onEntry()
@@ -54,7 +57,7 @@ struct StPlaceGripperClose : smacc2::SmaccState<StPlaceGripperClose, StPlace>
     this->setGlobalSMData(
       std::string(sm_data::kPlaceResumeSubstateId),
       std::string(sm_data::kPlaceSubstateGripperClose));
-    RCLCPP_INFO(getLogger(), "WORK::PLACE::GRIPPER_CLOSE - executing CbCtrlGripper POSITION=0.0 [bypass: 'n']");
+    RCLCPP_INFO(getLogger(), "WORK::PLACE::GRIPPER_CLOSE - executing CbCtrlGripper from YAML [bypass: 'n']");
   }
 };
 
