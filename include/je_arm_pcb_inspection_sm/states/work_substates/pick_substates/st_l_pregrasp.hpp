@@ -36,8 +36,6 @@ public:
   CbMovePcbTargetPose()
   {
     tip_link_ = "Link7";
-    linearStepMeters_ = 0.01;
-    minPathFraction_ = 0.98;
   }
 
   void onEntry() override

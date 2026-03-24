@@ -58,8 +58,6 @@ struct StLRetreat : smacc2::SmaccState<StLRetreat, StPick>
         state.getGlobalSMData(std::string(sm_data::kWaitResourcesPoseQw), pose.pose.orientation.w);
 
         bh.tip_link_ = "Link7";
-        bh.linearStepMeters_ = 0.005;
-        bh.planningTimeSec_ = 1.0;
         bh.targetPose = pose;
 
         RCLCPP_INFO(

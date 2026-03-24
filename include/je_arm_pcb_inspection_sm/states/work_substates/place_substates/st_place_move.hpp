@@ -46,8 +46,6 @@ struct StPlaceCartesianDown : smacc2::SmaccState<StPlaceCartesianDown, StPlace>
       [](cl_moveit2z::CbMoveEndEffectorLinearSeeded & bh, StPlaceCartesianDown & state)
       {
         bh.tip_link_ = "Link7";
-        bh.linearStepMeters_ = 0.005;
-        bh.planningTimeSec_ = 1.0;
         bh.targetPose = computePlacePose(state, 0.0);
       });
   }

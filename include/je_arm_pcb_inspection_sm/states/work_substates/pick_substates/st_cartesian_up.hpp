@@ -70,8 +70,6 @@ struct StCartesianUp : smacc2::SmaccState<StCartesianUp, StPick>
         pose.pose.position.z += offsetZ;
 
         bh.tip_link_ = "Link7";
-        bh.linearStepMeters_ = 0.005;
-        bh.planningTimeSec_ = 1.0;
         bh.targetPose = pose;
 
         RCLCPP_INFO(
