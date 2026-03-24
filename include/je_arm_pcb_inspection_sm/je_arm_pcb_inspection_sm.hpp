@@ -73,6 +73,7 @@ struct SmJeArmPcbInspection : public smacc2::SmaccStateMachineBase<SmJeArmPcbIns
     this->setGlobalSMData(std::string(sm_data::kPlaceResumeFromPause), false);
     this->setGlobalSMData(std::string(sm_data::kPlaceResumeSubstateId), std::string(sm_data::kPlaceSubstateLPregrasp));
     this->setGlobalSMData(std::string(sm_data::kPlaceDelayNextSubstateId), std::string(sm_data::kPlaceSubstateLPregrasp));
+    this->setGlobalSMData(std::string(sm_data::kTestGripperCommand), std::string("pick_close"));
     this->setGlobalSMData(std::string(sm_data::kPcbPresent), false);
     this->setGlobalSMData(std::string(sm_data::kLeftSlotFree), false);
     this->setGlobalSMData(std::string(sm_data::kRightSlotFree), false);
@@ -137,6 +138,7 @@ struct SmJeArmPcbInspection : public smacc2::SmaccStateMachineBase<SmJeArmPcbIns
 // ====================================
 
 #include "states/st_idle.hpp"
+#include "states/st_test_gripper.hpp"
 #include "states/st_activate.hpp"
 #include "states/st_back_to_idle.hpp"
 #include "states/st_wait_resources.hpp"

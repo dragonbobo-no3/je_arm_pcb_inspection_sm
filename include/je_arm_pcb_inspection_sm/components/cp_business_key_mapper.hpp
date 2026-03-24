@@ -92,9 +92,14 @@ public:
         RCLCPP_WARN(getLogger(), "  -> Key matched: 's' or 'S', posting EvStartWork");
         this->postEvent<EvStartWork>();
       }
+      else if (key == 't' || key == 'T')
+      {
+        RCLCPP_WARN(getLogger(), "  -> Key matched: 't' or 'T', posting EvTestGripper");
+        this->postEvent<EvTestGripper>();
+      }
       else
       {
-        RCLCPP_WARN(getLogger(), "  -> Key not matched: got '%c', expected 's'", key);
+        RCLCPP_WARN(getLogger(), "  -> Key not matched: got '%c', expected 's' or 't'", key);
       }
       return;
     }
@@ -294,22 +299,40 @@ private:
 
     if (present)
     {
-      this->getStateMachine()->getGlobalSMData(
-        std::string(sm_data::kPcbTargetFrameId), detectionMsg.pose.header.frame_id);
-      this->getStateMachine()->getGlobalSMData(
-        std::string(sm_data::kPcbTargetX), detectionMsg.pose.pose.position.x);
-      this->getStateMachine()->getGlobalSMData(
-        std::string(sm_data::kPcbTargetY), detectionMsg.pose.pose.position.y);
-      this->getStateMachine()->getGlobalSMData(
-        std::string(sm_data::kPcbTargetZ), detectionMsg.pose.pose.position.z);
-      this->getStateMachine()->getGlobalSMData(
-        std::string(sm_data::kPcbTargetQx), detectionMsg.pose.pose.orientation.x);
-      this->getStateMachine()->getGlobalSMData(
-        std::string(sm_data::kPcbTargetQy), detectionMsg.pose.pose.orientation.y);
-      this->getStateMachine()->getGlobalSMData(
-        std::string(sm_data::kPcbTargetQz), detectionMsg.pose.pose.orientation.z);
-      this->getStateMachine()->getGlobalSMData(
-        std::string(sm_data::kPcbTargetQw), detectionMsg.pose.pose.orientation.w);
+      // Load pick coordinates from YAML as default
+      try
+      {
+        const std::string packageShareDir =
+          ament_index_cpp::get_package_share_directory("je_arm_pcb_inspection_sm");
+        const std::string yamlPath =
+          packageShareDir + "/config/move_group_client/cartesian_states/pick.yaml";
+
+        YAML::Node root = YAML::LoadFile(yamlPath);
+
+        detectionMsg.pose.header.frame_id =
+          root["frame_id"] ? root["frame_id"].as<std::string>() : std::string("base_link");
+        detectionMsg.pose.pose.position.x = root["x"].as<double>();
+        detectionMsg.pose.pose.position.y = root["y"].as<double>();
+        detectionMsg.pose.pose.position.z = root["z"].as<double>();
+        detectionMsg.pose.pose.orientation.x = root["qx"].as<double>();
+        detectionMsg.pose.pose.orientation.y = root["qy"].as<double>();
+        detectionMsg.pose.pose.orientation.z = root["qz"].as<double>();
+        detectionMsg.pose.pose.orientation.w = root["qw"].as<double>();
+      }
+      catch (const std::exception & e)
+      {
+        RCLCPP_WARN(
+          getLogger(),
+          "Failed to load pick.yaml: %s, using default values",
+          e.what());
+        detectionMsg.pose.pose.position.x = -0.273;
+        detectionMsg.pose.pose.position.y = 0.0;
+        detectionMsg.pose.pose.position.z = 0.412;
+        detectionMsg.pose.pose.orientation.x = 0.0;
+        detectionMsg.pose.pose.orientation.y = -0.764357;
+        detectionMsg.pose.pose.orientation.z = 0.0;
+        detectionMsg.pose.pose.orientation.w = 0.644794;
+      }
     }
 
     if (pcbDetectionPub_ != nullptr)

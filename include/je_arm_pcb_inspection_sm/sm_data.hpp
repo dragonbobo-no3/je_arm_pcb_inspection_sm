@@ -86,5 +86,18 @@ inline constexpr const char * kWaitTimeoutSec = "wait_timeout_sec";
 inline constexpr const char * kWorkCycleSec = "work_cycle_sec";
 inline constexpr const char * kBackHomeSec = "back_home_sec";
 inline constexpr const char * kSharedDelaySec = "shared_delay_sec";
+
+// Test gripper configuration
+inline constexpr const char * kTestGripperCommand = "test_gripper_command";
+
+// Gripper control parameters (from test_gripper.yaml or gripper commands)
+inline constexpr const char * kGripperMode = "gripper_mode";
+inline constexpr const char * kGripperPosition = "gripper_position";
+inline constexpr const char * kGripperPreset = "gripper_preset";
+inline constexpr const char * kGripperLeftValid = "gripper_left_valid";
+inline constexpr const char * kGripperRightValid = "gripper_right_valid";
+inline constexpr const char * kGripperTopic = "gripper_topic";
+inline constexpr const char * kGripperTimeoutSec = "gripper_timeout_sec";
+
 }  // namespace sm_data
 }  // namespace je_arm_pcb_inspection_sm

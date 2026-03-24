@@ -33,7 +33,7 @@ struct StPlaceLPregrasp : smacc2::SmaccState<StPlaceLPregrasp, StPlace>
   typedef boost::mpl::list<
     smacc2::Transition<
       smacc2::EvCbSuccess<cl_moveit2z::CbMoveEndEffectorLinearSeeded, OrArm>,
-      StPlaceCartesianDown>,
+      StDelay>,
     smacc2::Transition<
       smacc2::EvCbFailure<cl_moveit2z::CbMoveEndEffectorLinearSeeded, OrArm>,
       StPause>,

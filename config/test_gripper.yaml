@@ -1,0 +1,30 @@
+# 夹爪测试配置文件
+# 用于 StTestGripper 状态，运行时可直接修改目标位置而无需重新编译
+
+test_gripper:
+  # 夹爪控制模式: "position" 或 "preset"
+  mode: "position"
+  
+  # 目标位置 (当 mode=position 时使用)
+  # 范围通常为 0.0 (关闭) 到 1.0 (打开)
+  position: 0.5
+  
+  # 预设值 (当 mode=preset 时使用)
+  preset: 0
+  
+  # 夹爪有效性配置
+  left_valid: true
+  right_valid: false
+  
+  # 夹爪控制话题
+  topic: "/end_effector_cmd_lr"
+  
+  # 可选：在执行命令前的延迟时间（秒）
+  delay_before_sec: 0.0
+  
+  # 可选：命令执行的超时时间（秒）
+  timeout_sec: 5.0
+  
+  # 日志级别
+  log_level: "INFO"
+

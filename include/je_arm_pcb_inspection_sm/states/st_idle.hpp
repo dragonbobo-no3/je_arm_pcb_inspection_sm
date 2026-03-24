@@ -14,6 +14,7 @@ struct StActivate;
 struct StWaitResources;
 struct StDelay;
 struct StPause;
+struct StTestGripper;
 
 namespace work_substates
 {
@@ -27,6 +28,7 @@ struct StIdle : smacc2::SmaccState<StIdle, SmJeArmPcbInspection>
 
   typedef boost::mpl::list<
     smacc2::Transition<EvStartWork, StActivate>,
+    smacc2::Transition<EvTestGripper, StTestGripper>,
     smacc2::Transition<EvDelayRequested, StDelay>
   > reactions;
 

@@ -10,6 +10,9 @@ namespace je_arm_pcb_inspection_sm
 // IDLE -> WAIT_RESOURCES
 struct EvStartWork : sc::event<EvStartWork> {};
 
+// IDLE -> TEST_GRIPPER (用于测试夹爪功能)
+struct EvTestGripper : sc::event<EvTestGripper> {};
+
 // WAIT_RESOURCES -> WORK
 // WORK -> WORK (循环)
 struct EvCanWork : sc::event<EvCanWork> {};

@@ -39,13 +39,15 @@ struct StPlaceGripperOpen : smacc2::SmaccState<StPlaceGripperOpen, StPlace>
   static void staticConfigure()
   {
     const auto cfg = je_arm_pcb_inspection_sm::utils::loadGripperCommandConfig("place_open");
+    // 1.5 秒等待时间（无反馈，只是延迟）
     configure_orthogonal<OrArm, cl_moveit2z::CbCtrlGripper>(
       cfg.mode,
       cfg.position,
       cfg.preset,
       cfg.leftValid,
       cfg.rightValid,
-      cfg.topic);
+      cfg.topic,
+      1.5);  // timeout_sec: 1.5 秒
   }
 
   void onEntry()
