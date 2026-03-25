@@ -36,10 +36,10 @@ inline std::string bjtNowString()
 
 inline std::string formatArmSnapshot(smacc2::ISmaccStateMachine & sm)
 {
-  auto * orthogonal = sm.getOrthogonal<je_arm_pcb_inspection_sm::OrArm>();
+  auto * orthogonal = sm.getOrthogonal<je_arm_pcb_inspection_sm::OrLeftArm>();
   if (orthogonal == nullptr)
   {
-    return "arm_state=unavailable(or_arm=null)";
+    return "arm_state=unavailable(or_left_arm=null)";
   }
 
   cl_moveit2z::ClMoveit2z * moveitClient = nullptr;
@@ -66,7 +66,7 @@ inline std::string formatArmSnapshot(smacc2::ISmaccStateMachine & sm)
     }
     oss << '}';
 
-    const auto poseStamped = mgi.getCurrentPose("Link7");
+    const auto poseStamped = mgi.getCurrentPose("Link17");
     const auto & p = poseStamped.pose.position;
     const auto & q = poseStamped.pose.orientation;
     oss << " | ee(frame=" << poseStamped.header.frame_id

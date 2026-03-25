@@ -29,19 +29,55 @@ namespace je_arm_pcb_inspection_sm
 {
 using namespace std::chrono_literals;
 
-class OrArm : public smacc2::Orthogonal<OrArm>
+class OrLeftArm : public smacc2::Orthogonal<OrLeftArm>
 {
 public:
   void onInitialize() override
   {
-    auto move_group_client = this->createClient<cl_moveit2z::ClMoveit2z>("jearm");
+    auto move_group_client = this->createClient<cl_moveit2z::ClMoveit2z>("left_arm");
     move_group_client->createComponent<cl_moveit2z::CpMotionPlanner>();
     move_group_client->createComponent<cl_moveit2z::CpTrajectoryExecutor>();
     move_group_client->createComponent<cl_moveit2z::CpTrajectoryHistory>();
     auto graspingComponent = move_group_client->createComponent<cl_moveit2z::CpGraspingComponent>();
 
-    graspingComponent->gripperLink_="tool0";
-    graspingComponent->createGraspableBox("virtualBox", 0,0.5,0.5,0.1,0.1,0.1);
+    graspingComponent->gripperLink_ = "Link17";
+    graspingComponent->createGraspableBox("virtualBox", 0, 0.5, 0.5, 0.1, 0.1, 0.1);
   }
 };
+
+class OrRightArm : public smacc2::Orthogonal<OrRightArm>
+{
+public:
+  void onInitialize() override
+  {
+    auto move_group_client = this->createClient<cl_moveit2z::ClMoveit2z>("right_arm");
+    move_group_client->createComponent<cl_moveit2z::CpMotionPlanner>();
+    move_group_client->createComponent<cl_moveit2z::CpTrajectoryExecutor>();
+    move_group_client->createComponent<cl_moveit2z::CpTrajectoryHistory>();
+    auto graspingComponent = move_group_client->createComponent<cl_moveit2z::CpGraspingComponent>();
+
+    graspingComponent->gripperLink_ = "Link27";
+    graspingComponent->createGraspableBox("virtualBox", 0, 0.5, 0.5, 0.1, 0.1, 0.1);
+  }
+};
+
+class OrBothArms : public smacc2::Orthogonal<OrBothArms>
+{
+public:
+  void onInitialize() override
+  {
+    auto move_group_client = this->createClient<cl_moveit2z::ClMoveit2z>("both_arms");
+    move_group_client->createComponent<cl_moveit2z::CpMotionPlanner>();
+    move_group_client->createComponent<cl_moveit2z::CpTrajectoryExecutor>();
+    move_group_client->createComponent<cl_moveit2z::CpTrajectoryHistory>();
+  }
+};
+
+class OrGripper : public smacc2::Orthogonal<OrGripper>
+{
+public:
+  void onInitialize() override {}
+};
+
+using OrArm = OrLeftArm;
 }  // namespace je_arm_pcb_inspection_sm

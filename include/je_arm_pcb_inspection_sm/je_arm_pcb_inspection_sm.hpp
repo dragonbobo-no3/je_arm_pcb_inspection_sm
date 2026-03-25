@@ -126,7 +126,10 @@ struct SmJeArmPcbInspection : public smacc2::SmaccStateMachineBase<SmJeArmPcbIns
           log_utils::formatArmSnapshot(*this).c_str());
       });
 
-    this->createOrthogonal<OrArm>(); 
+    this->createOrthogonal<OrLeftArm>();
+    this->createOrthogonal<OrRightArm>();
+    this->createOrthogonal<OrBothArms>();
+    this->createOrthogonal<OrGripper>();
     this->createOrthogonal<OrKeyboard>();
   }
 };

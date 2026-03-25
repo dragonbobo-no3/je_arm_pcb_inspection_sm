@@ -30,8 +30,8 @@ struct StPlaceGripperOpen : smacc2::SmaccState<StPlaceGripperOpen, StPlace>
   using SmaccState::SmaccState;
 
   typedef boost::mpl::list<
-    smacc2::Transition<smacc2::EvCbSuccess<cl_moveit2z::CbCtrlGripper, OrArm>, StPlaceCartesianUp>,
-    smacc2::Transition<smacc2::EvCbFailure<cl_moveit2z::CbCtrlGripper, OrArm>, StPause>,
+    smacc2::Transition<smacc2::EvCbSuccess<cl_moveit2z::CbCtrlGripper, OrGripper>, StPlaceCartesianUp>,
+    smacc2::Transition<smacc2::EvCbFailure<cl_moveit2z::CbCtrlGripper, OrGripper>, StPause>,
     smacc2::Transition<EvPlaceReleased, StPlaceCartesianUp>,
     smacc2::Transition<EvPauseRequested, StPause>
   > reactions;
@@ -39,7 +39,7 @@ struct StPlaceGripperOpen : smacc2::SmaccState<StPlaceGripperOpen, StPlace>
   static void staticConfigure()
   {
     const auto cfg = je_arm_pcb_inspection_sm::utils::loadGripperCommandConfig("place_open");
-    configure_orthogonal<OrArm, cl_moveit2z::CbCtrlGripper>(
+    configure_orthogonal<OrGripper, cl_moveit2z::CbCtrlGripper>(
       cfg.mode,
       cfg.position,
       cfg.preset,

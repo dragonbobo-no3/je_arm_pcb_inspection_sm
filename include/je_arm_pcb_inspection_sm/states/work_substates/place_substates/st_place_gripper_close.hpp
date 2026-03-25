@@ -29,8 +29,8 @@ struct StPlaceGripperClose : smacc2::SmaccState<StPlaceGripperClose, StPlace>
   using SmaccState::SmaccState;
 
   typedef boost::mpl::list<
-    smacc2::Transition<smacc2::EvCbSuccess<cl_moveit2z::CbCtrlGripper, OrArm>, StBack>,
-    smacc2::Transition<smacc2::EvCbFailure<cl_moveit2z::CbCtrlGripper, OrArm>, StPause>,
+    smacc2::Transition<smacc2::EvCbSuccess<cl_moveit2z::CbCtrlGripper, OrGripper>, StBack>,
+    smacc2::Transition<smacc2::EvCbFailure<cl_moveit2z::CbCtrlGripper, OrGripper>, StPause>,
     smacc2::Transition<EvPlaceDone, StBack>,
     smacc2::Transition<EvPauseRequested, StPause>
   > reactions;
@@ -38,7 +38,7 @@ struct StPlaceGripperClose : smacc2::SmaccState<StPlaceGripperClose, StPlace>
   static void staticConfigure()
   {
     const auto cfg = je_arm_pcb_inspection_sm::utils::loadGripperCommandConfig("place_close");
-    configure_orthogonal<OrArm, cl_moveit2z::CbCtrlGripper>(
+    configure_orthogonal<OrGripper, cl_moveit2z::CbCtrlGripper>(
       cfg.mode,
       cfg.position,
       cfg.preset,

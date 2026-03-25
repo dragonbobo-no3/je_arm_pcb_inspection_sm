@@ -35,11 +35,11 @@ def generate_launch_description():
 
     moveit_config_share = get_package_share_directory("my_jearm_moveit_config")
 
-    urdf_file = os.path.join(moveit_config_share, 'config', 'L_JEARM.urdf')
+    urdf_file = os.path.join(moveit_config_share, 'config', 'DUAL_JEARM.urdf')
     with open(urdf_file, 'r') as f:
         robot_description = f.read()
 
-    srdf_file = os.path.join(moveit_config_share, 'config', 'L_JEARM.srdf.xacro')
+    srdf_file = os.path.join(moveit_config_share, 'config', 'DUAL_JEARM.srdf')
     with open(srdf_file, 'r') as f:
         robot_description_semantic = f.read()
 

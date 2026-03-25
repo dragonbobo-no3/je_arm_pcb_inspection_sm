@@ -45,7 +45,7 @@ struct StPlaceLPregrasp : smacc2::SmaccState<StPlaceLPregrasp, StPlace>
     configure_orthogonal_runtime<OrArm, cl_moveit2z::CbMoveEndEffectorLinearSeeded>(
       [](cl_moveit2z::CbMoveEndEffectorLinearSeeded & bh, StPlaceLPregrasp & state)
       {
-        bh.tip_link_ = "Link7";
+        bh.tip_link_ = "Link17";
         bh.targetPose = computePlacePose(state, 0.10);
       });
   }

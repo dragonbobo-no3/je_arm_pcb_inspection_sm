@@ -35,7 +35,7 @@ class CbMovePcbTargetPose : public cl_moveit2z::CbMoveEndEffectorLinearSeeded
 public:
   CbMovePcbTargetPose()
   {
-    tip_link_ = "Link7";
+    tip_link_ = "Link17";
   }
 
   void onEntry() override

@@ -29,8 +29,8 @@ struct StTestGripper : smacc2::SmaccState<StTestGripper, SmJeArmPcbInspection>
   using SmaccState::SmaccState;
 
   typedef boost::mpl::list<
-    smacc2::Transition<smacc2::EvCbSuccess<cl_moveit2z::CbCtrlGripper, OrArm>, StIdle>,
-    smacc2::Transition<smacc2::EvCbFailure<cl_moveit2z::CbCtrlGripper, OrArm>, StPause>,
+    smacc2::Transition<smacc2::EvCbSuccess<cl_moveit2z::CbCtrlGripper, OrGripper>, StIdle>,
+    smacc2::Transition<smacc2::EvCbFailure<cl_moveit2z::CbCtrlGripper, OrGripper>, StPause>,
     smacc2::Transition<EvGripperClosed, StIdle>,
     smacc2::Transition<EvPauseRequested, StPause>
   > reactions;
@@ -38,7 +38,7 @@ struct StTestGripper : smacc2::SmaccState<StTestGripper, SmJeArmPcbInspection>
   static void staticConfigure()
   {
     // 使用 YAML 默认值配置，实际参数在 onEntry 时从 test_gripper.yaml 读取
-    configure_orthogonal<OrArm, cl_moveit2z::CbCtrlGripper>(
+    configure_orthogonal<OrGripper, cl_moveit2z::CbCtrlGripper>(
       je_software::msg::EndEffectorCommand::MODE_POSITION,  // 默认模式
       0.0,                                                   // 默认位置（关闭）
       0,                                                     // 默认 preset
@@ -121,7 +121,7 @@ struct StTestGripper : smacc2::SmaccState<StTestGripper, SmJeArmPcbInspection>
         log_utils::bjtNowString().c_str());
 
       // 发送成功事件
-      this->postEvent(new smacc2::EvCbSuccess<cl_moveit2z::CbCtrlGripper, OrArm>());
+      this->postEvent(new smacc2::EvCbSuccess<cl_moveit2z::CbCtrlGripper, OrGripper>());
     }
     catch (const std::exception & e)
     {
@@ -132,7 +132,7 @@ struct StTestGripper : smacc2::SmaccState<StTestGripper, SmJeArmPcbInspection>
         e.what());
 
       // 发送失败事件
-      this->postEvent(new smacc2::EvCbFailure<cl_moveit2z::CbCtrlGripper, OrArm>());
+      this->postEvent(new smacc2::EvCbFailure<cl_moveit2z::CbCtrlGripper, OrGripper>());
     }
   }
 

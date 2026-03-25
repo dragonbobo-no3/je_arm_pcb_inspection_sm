@@ -45,7 +45,7 @@ struct StPlaceCartesianUp : smacc2::SmaccState<StPlaceCartesianUp, StPlace>
     configure_orthogonal_runtime<OrArm, cl_moveit2z::CbMoveEndEffectorLinearSeeded>(
       [](cl_moveit2z::CbMoveEndEffectorLinearSeeded & bh, StPlaceCartesianUp & state)
       {
-        bh.tip_link_ = "Link7";
+        bh.tip_link_ = "Link17";
         bh.targetPose = computePlacePose(state, 0.10);
       });
   }
