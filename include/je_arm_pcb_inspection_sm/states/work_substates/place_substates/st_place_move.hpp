@@ -3,12 +3,10 @@
 #include <smacc2/smacc.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <cl_moveit2z/client_behaviors/cb_move_end_effector_linear_seeded.hpp>
-
 #include "je_arm_pcb_inspection_sm/events.hpp"
 #include "je_arm_pcb_inspection_sm/orthogonals/or_arm.hpp"
 #include "je_arm_pcb_inspection_sm/sm_data.hpp"
-#include "je_arm_pcb_inspection_sm/states/work_substates/place_substates/place_pose_utils.hpp"
+#include "je_arm_pcb_inspection_sm/states/work_substates/place_substates/cb_move_place_target_pose.hpp"
 
 namespace je_arm_pcb_inspection_sm
 {
@@ -32,21 +30,20 @@ struct StPlaceCartesianDown : smacc2::SmaccState<StPlaceCartesianDown, StPlace>
 
   typedef boost::mpl::list<
     smacc2::Transition<
-      smacc2::EvCbSuccess<cl_moveit2z::CbMoveEndEffectorLinearSeeded, OrArm>,
+      smacc2::EvCbSuccess<CbMovePlaceTargetPose, OrArm>,
       StDelay>,
     smacc2::Transition<
-      smacc2::EvCbFailure<cl_moveit2z::CbMoveEndEffectorLinearSeeded, OrArm>,
+      smacc2::EvCbFailure<CbMovePlaceTargetPose, OrArm>,
       StPause>,
     smacc2::Transition<EvPauseRequested, StPause>
   > reactions;
 
   static void staticConfigure()
   {
-    configure_orthogonal_runtime<OrArm, cl_moveit2z::CbMoveEndEffectorLinearSeeded>(
-      [](cl_moveit2z::CbMoveEndEffectorLinearSeeded & bh, StPlaceCartesianDown & state)
+    configure_orthogonal_runtime<OrArm, CbMovePlaceTargetPose>(
+      [](CbMovePlaceTargetPose & bh, StPlaceCartesianDown & state)
       {
-        bh.tip_link_ = "Link17";
-        bh.targetPose = computePlacePose(state, 0.0);
+        bh.zOffsetParam_ = 0.0;  // no offset for place
       });
   }
 

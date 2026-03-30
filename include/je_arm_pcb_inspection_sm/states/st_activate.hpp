@@ -103,15 +103,15 @@ struct StActivateP1 : smacc2::SmaccState<StActivateP1, StActivate>
   using SmaccState::SmaccState;
 
   typedef boost::mpl::list<
-    smacc2::Transition<smacc2::EvCbSuccess<cl_moveit2z::CbMoveKnownState, OrArm>, StDelay>,
-    smacc2::Transition<smacc2::EvCbFailure<cl_moveit2z::CbMoveKnownState, OrArm>, StPause>
+    smacc2::Transition<smacc2::EvCbSuccess<cl_moveit2z::CbMoveKnownState, OrBothArms>, StDelay>,
+    smacc2::Transition<smacc2::EvCbFailure<cl_moveit2z::CbMoveKnownState, OrBothArms>, StPause>
   > reactions;
 
   static void staticConfigure()
   {
-    configure_orthogonal<OrArm, cl_moveit2z::CbMoveKnownState>(
+    configure_orthogonal<OrBothArms, cl_moveit2z::CbMoveKnownState>(
       "je_arm_pcb_inspection_sm",
-      "config/move_group_client/joint_states/pick_p1.yaml");
+      "config/move_group_client/joint_states/dual_pick_p1.yaml");
   }
 
   void onEntry()
@@ -123,7 +123,7 @@ struct StActivateP1 : smacc2::SmaccState<StActivateP1, StActivate>
     this->setGlobalSMData(
       std::string(sm_data::kActivateDelayNextSubstateId),
       std::string(sm_data::kActivateSubstateP2));
-    RCLCPP_INFO(getLogger(), "ACTIVATE::P1 - moving to waypoint 1");
+    RCLCPP_INFO(getLogger(), "ACTIVATE::P1 - moving to waypoint 1 (both arms)");
   }
 };
 
@@ -133,15 +133,15 @@ struct StActivateP2 : smacc2::SmaccState<StActivateP2, StActivate>
   using SmaccState::SmaccState;
 
   typedef boost::mpl::list<
-    smacc2::Transition<smacc2::EvCbSuccess<cl_moveit2z::CbMoveKnownState, OrArm>, StDelay>,
-    smacc2::Transition<smacc2::EvCbFailure<cl_moveit2z::CbMoveKnownState, OrArm>, StPause>
+    smacc2::Transition<smacc2::EvCbSuccess<cl_moveit2z::CbMoveKnownState, OrBothArms>, StDelay>,
+    smacc2::Transition<smacc2::EvCbFailure<cl_moveit2z::CbMoveKnownState, OrBothArms>, StPause>
   > reactions;
 
   static void staticConfigure()
   {
-    configure_orthogonal<OrArm, cl_moveit2z::CbMoveKnownState>(
+    configure_orthogonal<OrBothArms, cl_moveit2z::CbMoveKnownState>(
       "je_arm_pcb_inspection_sm",
-      "config/move_group_client/joint_states/pick_p2.yaml");
+      "config/move_group_client/joint_states/dual_pick_p2.yaml");
   }
 
   void onEntry()
@@ -153,7 +153,7 @@ struct StActivateP2 : smacc2::SmaccState<StActivateP2, StActivate>
     this->setGlobalSMData(
       std::string(sm_data::kActivateDelayNextSubstateId),
       std::string(sm_data::kActivateSubstateDone));
-    RCLCPP_INFO(getLogger(), "ACTIVATE::P2 - moving to waypoint 2");
+    RCLCPP_INFO(getLogger(), "ACTIVATE::P2 - moving to waypoint 2 (both arms)");
   }
 };
 

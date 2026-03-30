@@ -9,6 +9,8 @@
 #include "je_arm_pcb_inspection_sm/events.hpp"
 #include "je_arm_pcb_inspection_sm/orthogonals/or_arm.hpp"
 #include "je_arm_pcb_inspection_sm/sm_data.hpp"
+#include "je_arm_pcb_inspection_sm/utils/logging.hpp"
+#include "je_arm_pcb_inspection_sm/utils/wait_resources_offset_loader.hpp"
 
 namespace je_arm_pcb_inspection_sm
 {
@@ -57,16 +59,35 @@ struct StLRetreat : smacc2::SmaccState<StLRetreat, StPick>
         state.getGlobalSMData(std::string(sm_data::kWaitResourcesPoseQz), pose.pose.orientation.z);
         state.getGlobalSMData(std::string(sm_data::kWaitResourcesPoseQw), pose.pose.orientation.w);
 
+        double offsetX = 0.0;
+        double offsetY = 0.0;
+        double offsetZ = 0.0;
+        std::string offsetPath;
+        const bool offsetLoaded = je_arm_pcb_inspection_sm::utils::loadWaitResourcesOffset(
+          offsetX, offsetY, offsetZ, offsetPath);
+
+        pose.pose.position.x += offsetX;
+        pose.pose.position.y += offsetY;
+        pose.pose.position.z += offsetZ;
+
         bh.tip_link_ = "Link17";
         bh.targetPose = pose;
 
         RCLCPP_INFO(
           state.getLogger(),
-          "WORK::PICK::L_RETREAT - linear target configured: frame=%s pos=(%.4f, %.4f, %.4f)",
+          "WORK::PICK::L_RETREAT - linear target configured: offset=(%.4f, %.4f, %.4f, file=%s) frame=%s pos=(%.4f, %.4f, %.4f) quat=(%.4f, %.4f, %.4f, %.4f)",
+          offsetX,
+          offsetY,
+          offsetZ,
+          offsetLoaded ? offsetPath.c_str() : "<default>",
           bh.targetPose.header.frame_id.c_str(),
           bh.targetPose.pose.position.x,
           bh.targetPose.pose.position.y,
-          bh.targetPose.pose.position.z);
+          bh.targetPose.pose.position.z,
+          bh.targetPose.pose.orientation.x,
+          bh.targetPose.pose.orientation.y,
+          bh.targetPose.pose.orientation.z,
+          bh.targetPose.pose.orientation.w);
       });
   }
 

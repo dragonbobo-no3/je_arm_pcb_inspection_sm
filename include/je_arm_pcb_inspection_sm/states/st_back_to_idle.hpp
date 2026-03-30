@@ -102,15 +102,15 @@ struct StBackToIdleP2 : smacc2::SmaccState<StBackToIdleP2, StBackToIdle>
   using SmaccState::SmaccState;
 
   typedef boost::mpl::list<
-    smacc2::Transition<smacc2::EvCbSuccess<cl_moveit2z::CbMoveKnownState, OrArm>, StBackToIdleP1>,
-    smacc2::Transition<smacc2::EvCbFailure<cl_moveit2z::CbMoveKnownState, OrArm>, StPause>>
+    smacc2::Transition<smacc2::EvCbSuccess<cl_moveit2z::CbMoveKnownState, OrBothArms>, StBackToIdleP1>,
+    smacc2::Transition<smacc2::EvCbFailure<cl_moveit2z::CbMoveKnownState, OrBothArms>, StPause>>
     reactions;
 
   static void staticConfigure()
   {
-    configure_orthogonal<OrArm, cl_moveit2z::CbMoveKnownState>(
+    configure_orthogonal<OrBothArms, cl_moveit2z::CbMoveKnownState>(
       "je_arm_pcb_inspection_sm",
-      "config/move_group_client/joint_states/pick_p1.yaml");
+      "config/move_group_client/joint_states/dual_pick_p1.yaml");
   }
 
   void onEntry()
@@ -118,7 +118,7 @@ struct StBackToIdleP2 : smacc2::SmaccState<StBackToIdleP2, StBackToIdle>
     this->setGlobalSMData(
       std::string(sm_data::kBackToIdleResumeSubstateId),
       std::string(sm_data::kBackToIdleSubstateP2));
-    RCLCPP_INFO(getLogger(), "BACK_TO_IDLE::P2 - moving to activate P1 pose");
+    RCLCPP_INFO(getLogger(), "BACK_TO_IDLE::P2 - moving to activate P1 pose (both arms)");
   }
 };
 
@@ -128,15 +128,15 @@ struct StBackToIdleP1 : smacc2::SmaccState<StBackToIdleP1, StBackToIdle>
   using SmaccState::SmaccState;
 
   typedef boost::mpl::list<
-    smacc2::Transition<smacc2::EvCbSuccess<cl_moveit2z::CbMoveKnownState, OrArm>, StIdle>,
-    smacc2::Transition<smacc2::EvCbFailure<cl_moveit2z::CbMoveKnownState, OrArm>, StPause>>
+    smacc2::Transition<smacc2::EvCbSuccess<cl_moveit2z::CbMoveKnownState, OrBothArms>, StIdle>,
+    smacc2::Transition<smacc2::EvCbFailure<cl_moveit2z::CbMoveKnownState, OrBothArms>, StPause>>
     reactions;
 
   static void staticConfigure()
   {
-    configure_orthogonal<OrArm, cl_moveit2z::CbMoveKnownState>(
+    configure_orthogonal<OrBothArms, cl_moveit2z::CbMoveKnownState>(
       "je_arm_pcb_inspection_sm",
-      "config/move_group_client/joint_states/back_to_idle_home.yaml");
+      "config/move_group_client/joint_states/dual_back_to_idle_home.yaml");
   }
 
   void onEntry()
@@ -144,7 +144,7 @@ struct StBackToIdleP1 : smacc2::SmaccState<StBackToIdleP1, StBackToIdle>
     this->setGlobalSMData(
       std::string(sm_data::kBackToIdleResumeSubstateId),
       std::string(sm_data::kBackToIdleSubstateP1));
-    RCLCPP_INFO(getLogger(), "BACK_TO_IDLE::P1 - moving to home pose");
+    RCLCPP_INFO(getLogger(), "BACK_TO_IDLE::P1 - moving to home pose (both arms)");
   }
 };
 
