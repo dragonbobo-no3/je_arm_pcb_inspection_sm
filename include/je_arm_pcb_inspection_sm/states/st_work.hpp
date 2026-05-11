@@ -23,7 +23,7 @@ namespace work_substates
 struct StWorkResumeRouter;
 }  // namespace work_substates
 
-/// WORK 状态：执行主要流程（拿起 -> 检查 -> 选择箱 -> 放置）
+/// WORK 状态：执行主要流程（拿起 -> 检查 -> 放置）
 struct StWork : smacc2::SmaccState<StWork, SmJeArmPcbInspection, work_substates::StWorkResumeRouter>
 {
   using SmaccState::SmaccState;
@@ -40,9 +40,17 @@ struct StWork : smacc2::SmaccState<StWork, SmJeArmPcbInspection, work_substates:
   { 
     this->requiresComponent(flow_);
     bool resumeFromPause = false;
+    std::string resumeState = sm_data::kWaitResourcesState;
+    std::string workResumeSubstate = sm_data::kWorkSubstatePick;
     this->getGlobalSMData(std::string(sm_data::kResumeFromPause), resumeFromPause);
+    this->getGlobalSMData(std::string(sm_data::kResumeStateId), resumeState);
+    this->getGlobalSMData(std::string(sm_data::kWorkResumeSubstateId), workResumeSubstate);
 
-    if (!resumeFromPause)
+    const bool enteringNewWorkCycle =
+      !resumeFromPause && (resumeState != sm_data::kWorkState) &&
+      (workResumeSubstate == sm_data::kWorkSubstatePick);
+
+    if (enteringNewWorkCycle)
     {
       this->setGlobalSMData(
         std::string(sm_data::kWorkResumeSubstateId),
@@ -51,7 +59,7 @@ struct StWork : smacc2::SmaccState<StWork, SmJeArmPcbInspection, work_substates:
     flow_->setResumeTarget(sm_data::kWorkState);
     RCLCPP_INFO(
       log_utils::bizLogger(),
-      "[%s] ENTER WORK (PICK->INSPECT->SELECT_BIN->PLACE)",
+      "[%s] ENTER WORK (PICK->INSPECT->PLACE)",
       log_utils::bjtNowString().c_str());
 
     auto node = this->getStateMachine().getNode();
@@ -87,5 +95,4 @@ private:
 #include "je_arm_pcb_inspection_sm/states/work_substates/st_work_resume_router.hpp"
 #include "je_arm_pcb_inspection_sm/states/work_substates/st_pick.hpp"
 #include "je_arm_pcb_inspection_sm/states/work_substates/st_inspect.hpp"
-#include "je_arm_pcb_inspection_sm/states/work_substates/st_select_bin.hpp"
 #include "je_arm_pcb_inspection_sm/states/work_substates/st_place.hpp"

@@ -9,6 +9,7 @@
 #include <je_arm_pcb_inspection_sm/msg/place_slot.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <smacc2/smacc.hpp>
+#include <std_msgs/msg/bool.hpp>
 #include <yaml-cpp/yaml.h>
 
 #include <cl_keyboard/components/cp_keyboard_listener_1.hpp>
@@ -43,8 +44,27 @@ public:
     placeSlotPub_ =
       node->create_publisher<je_arm_pcb_inspection_sm::msg::PlaceSlot>(
         placeSlotTopic_, rclcpp::QoS(10));
+    inspectDonePub_ =
+      node->create_publisher<std_msgs::msg::Bool>(
+        inspectDoneTopic_, rclcpp::QoS(10));
+    inspectDoneSub_ =
+      node->create_subscription<std_msgs::msg::Bool>(
+        inspectDoneTopic_,
+        rclcpp::QoS(10),
+        [this](const std_msgs::msg::Bool::SharedPtr msg)
+        {
+          if (msg != nullptr && msg->data)
+          {
+            this->handleInspectDoneSignal("topic");
+          }
+        });
 
     RCLCPP_INFO(log_utils::bizLogger(), "[%s] KEY_MAPPER ready", log_utils::bjtNowString().c_str());
+    RCLCPP_INFO(
+      log_utils::bizLogger(),
+      "[%s] KEY_MAPPER subscribed: inspect_done='%s'",
+      log_utils::bjtNowString().c_str(),
+      inspectDoneTopic_.c_str());
   }
 
   void onKeyPress(char key)
@@ -155,7 +175,6 @@ public:
       stateName.find("StCartesianUp") != std::string::npos ||
       stateName.find("StLRetreat") != std::string::npos ||
       stateName.find("StInspect") != std::string::npos ||
-      stateName.find("StSelectBin") != std::string::npos ||
       stateName.find("StPlace") != std::string::npos)
     {
       if (stateName.find("StLPregrasp") != std::string::npos && key == 'n')
@@ -174,9 +193,49 @@ public:
       {
         this->postEvent<EvGripperClosed>();
       }
+      else if (stateName.find("StInspectRightGripperClose") != std::string::npos && key == 'n')
+      {
+        this->postEvent<EvGripperClosed>();
+      }
+      else if (stateName.find("StInspectLeftGripperClose") != std::string::npos && key == 'n')
+      {
+        this->postEvent<EvGripperClosed>();
+      }
       else if (stateName.find("StCartesianUp") != std::string::npos && key == 'n')
       {
         this->postEvent<EvLifted>();
+      }
+      else if (stateName.find("StInspectLeftGripperOpen") != std::string::npos && key == 'n')
+      {
+        this->postEvent<EvGripperOpened>();
+      }
+      else if (stateName.find("StInspectRightGripperOpen") != std::string::npos && key == 'n')
+      {
+        this->postEvent<EvGripperOpened>();
+      }
+      else if (stateName.find("StInspectRightViewWaitAck") != std::string::npos && key == 'n')
+      {
+        publishInspectDone();
+      }
+      else if (stateName.find("StInspectFrontPoseWaitAck") != std::string::npos && key == 'n')
+      {
+        publishInspectDone();
+      }
+      else if (stateName.find("StInspectRightApproach") != std::string::npos && key == 'n')
+      {
+        this->postEvent<EvInspectStepAck>();
+      }
+      else if (stateName.find("StInspectLeftApproach") != std::string::npos && key == 'n')
+      {
+        this->postEvent<EvInspectStepAck>();
+      }
+      else if (stateName.find("StInspectRightRetreat") != std::string::npos && key == 'n')
+      {
+        this->postEvent<EvInspectStepAck>();
+      }
+      else if (stateName.find("StInspectLeftRetreat") != std::string::npos && key == 'n')
+      {
+        this->postEvent<EvInspectStepAck>();
       }
       else if (stateName.find("StLRetreat") != std::string::npos && key == 'n')
       {
@@ -185,10 +244,6 @@ public:
       else if (stateName.find("StPick") != std::string::npos && key == 'n')
       {
         this->postEvent<EvAtPregrasp>();
-      }
-      else if (stateName.find("StSelectBin") != std::string::npos && key == 'n')
-      {
-        this->postEvent<EvBinSelected>();
       }
       else if (stateName.find("StPlaceGripperOpen") != std::string::npos && key == 'n')
       {
@@ -289,6 +344,29 @@ private:
     return false;
   }
 
+  void handleInspectDoneSignal(const char * source)
+  {
+    auto * currentState = this->getStateMachine()->getCurrentState();
+    if (currentState == nullptr)
+    {
+      return;
+    }
+
+    const std::string stateName = currentState->getClassName();
+    if (
+      stateName.find("StInspectFrontPoseWaitAck") != std::string::npos ||
+      stateName.find("StInspectRightViewWaitAck") != std::string::npos)
+    {
+      RCLCPP_INFO(
+        log_utils::bizLogger(),
+        "[%s] INSPECT completion acknowledged by %s in state=%s -> post EvInspectStepAck",
+        log_utils::bjtNowString().c_str(),
+        source,
+        stateName.c_str());
+      this->postEvent<EvInspectStepAck>();
+    }
+  }
+
   void publishPcbDetection(bool present)
   {
     je_arm_pcb_inspection_sm::msg::PcbDetection detectionMsg;
@@ -359,6 +437,22 @@ private:
     }
   }
 
+  void publishInspectDone()
+  {
+    std_msgs::msg::Bool msg;
+    msg.data = true;
+
+    if (inspectDonePub_ != nullptr)
+    {
+      inspectDonePub_->publish(msg);
+    }
+
+    RCLCPP_INFO(
+      log_utils::bizLogger(),
+      "[%s] KEY 'n': published inspect_done=true",
+      log_utils::bjtNowString().c_str());
+  }
+
   void publishFreePlaceSlotFromYaml()
   {
     try
@@ -408,8 +502,11 @@ private:
 
   std::string pcbDetectionTopic_{"/vision/pcb_detection"};
   std::string placeSlotTopic_{"/vision/place_slot_detection"};
+  std::string inspectDoneTopic_{"/vision/inspect_done"};
   rclcpp::Publisher<je_arm_pcb_inspection_sm::msg::PcbDetection>::SharedPtr pcbDetectionPub_;
   rclcpp::Publisher<je_arm_pcb_inspection_sm::msg::PlaceSlot>::SharedPtr placeSlotPub_;
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr inspectDonePub_;
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr inspectDoneSub_;
   std::chrono::steady_clock::time_point lastPauseRequestTime_{};
 };
 

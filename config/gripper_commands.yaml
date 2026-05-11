@@ -24,3 +24,31 @@ gripper_commands:
     mode: torque
     command: close
     torque: 0.5
+
+  inspect_right_close:
+    mode: torque
+    command: close
+    torque: 0.5
+    left_valid: false
+    right_valid: true
+
+  inspect_right_open:
+    mode: torque
+    command: open
+    torque: 1.0
+    left_valid: false
+    right_valid: true
+
+  inspect_left_close:
+    mode: torque
+    command: close
+    torque: 0.5
+    left_valid: true
+    right_valid: false
+
+  inspect_left_open:
+    mode: torque
+    command: open
+    torque: 1.0
+    left_valid: true
+    right_valid: false

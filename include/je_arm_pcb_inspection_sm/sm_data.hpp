@@ -28,7 +28,6 @@ inline constexpr const char * kActivateDelayNextSubstateId = "activate_delay_nex
 inline constexpr const char * kWorkResumeSubstateId = "work_resume_substate_id";
 inline constexpr const char * kWorkSubstatePick = "WORK_PICK";
 inline constexpr const char * kWorkSubstateInspect = "WORK_INSPECT";
-inline constexpr const char * kWorkSubstateSelectBin = "WORK_SELECT_BIN";
 inline constexpr const char * kWorkSubstatePlace = "WORK_PLACE";
 inline constexpr const char * kWorkDelayNextSubstateId = "work_delay_next_substate_id";
 
@@ -43,6 +42,26 @@ inline constexpr const char * kPickSubstateGripperClose = "PICK_GRIPPER_CLOSE";
 inline constexpr const char * kPickSubstateCartesianUp = "PICK_CARTESIAN_UP";
 inline constexpr const char * kPickSubstateLRetreat = "PICK_L_RETREAT";
 inline constexpr const char * kPickDelayNextSubstateId = "pick_delay_next_substate_id";
+
+inline constexpr const char * kInspectResumeFromPause = "inspect_resume_from_pause";
+inline constexpr const char * kInspectResumeSubstateId = "inspect_resume_substate_id";
+inline constexpr const char * kInspectSubstateFrontPose = "INSPECT_FRONT_POSE";
+inline constexpr const char * kInspectSubstateAlignForRightHandover = "INSPECT_ALIGN_FOR_RIGHT_HANDOVER";
+inline constexpr const char * kInspectSubstateRightGripperOpenReceive = "INSPECT_RIGHT_GRIPPER_OPEN_RECEIVE";
+inline constexpr const char * kInspectSubstateRightApproach = "INSPECT_RIGHT_APPROACH";
+inline constexpr const char * kInspectSubstateRightGripperClose = "INSPECT_RIGHT_GRIPPER_CLOSE";
+inline constexpr const char * kInspectSubstateLeftGripperOpen = "INSPECT_LEFT_GRIPPER_OPEN";
+inline constexpr const char * kInspectSubstateRightRetreat = "INSPECT_RIGHT_RETREAT";
+inline constexpr const char * kInspectSubstateRightView = "INSPECT_RIGHT_VIEW";
+inline constexpr const char * kInspectSubstateAlignForLeftHandover = "INSPECT_ALIGN_FOR_LEFT_HANDOVER";
+inline constexpr const char * kInspectSubstateLeftGripperOpenReceive = "INSPECT_LEFT_GRIPPER_OPEN_RECEIVE";
+inline constexpr const char * kInspectSubstateLeftApproach = "INSPECT_LEFT_APPROACH";
+inline constexpr const char * kInspectSubstateLeftGripperClose = "INSPECT_LEFT_GRIPPER_CLOSE";
+inline constexpr const char * kInspectSubstateRightGripperOpen = "INSPECT_RIGHT_GRIPPER_OPEN";
+inline constexpr const char * kInspectSubstateLeftRetreat = "INSPECT_LEFT_RETREAT";
+inline constexpr const char * kInspectSubstateReturnWaitPose = "INSPECT_RETURN_WAIT_POSE";
+inline constexpr const char * kInspectSubstateWaitPlaceResult = "INSPECT_WAIT_PLACE_RESULT";
+inline constexpr const char * kInspectDelayNextSubstateId = "inspect_delay_next_substate_id";
 
 inline constexpr const char * kPlaceResumeFromPause = "place_resume_from_pause";
 inline constexpr const char * kPlaceResumeSubstateId = "place_resume_substate_id";

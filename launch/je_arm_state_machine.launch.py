@@ -22,6 +22,7 @@ def generate_launch_description():
         "CONDA_PREFIX": "",
         "CONDA_DEFAULT_ENV": "",
         "CONDA_PROMPT_MODIFIER": "",
+        "ROS_DOMAIN_ID": "199",
         "CONDA_SHLVL": "",
         "LD_PRELOAD": "",
         "TZ": "Asia/Shenzhen",
@@ -81,6 +82,7 @@ def generate_launch_description():
             (
                 "unset PYTHONPATH PYTHONHOME CONDA_PREFIX CONDA_DEFAULT_ENV CONDA_PROMPT_MODIFIER CONDA_SHLVL && "
                 "export PATH=/usr/bin:/bin:/usr/sbin:/sbin:$PATH && "
+                "export ROS_DOMAIN_ID=199 && "
                 "source /opt/ros/humble/setup.bash && "
                 "source /home/agx/ros2_ws/install/setup.bash && "
                 "echo 'SMACC2 keyboard ready: s(start), n(next step), w(loop), p(pause), r(resume), b(back), f(fault), u(resource-unavailable)' && "
@@ -91,6 +93,7 @@ def generate_launch_description():
         ],
         output="screen",
         shell=False,
+        additional_env=runtime_env,
     )
 
     sm_node = TimerAction(

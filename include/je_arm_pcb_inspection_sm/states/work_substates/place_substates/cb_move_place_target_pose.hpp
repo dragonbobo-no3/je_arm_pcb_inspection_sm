@@ -29,7 +29,7 @@ public:
     pose.header.frame_id = "base_link";
     pose.pose.position.x = -0.3182978288;
     pose.pose.position.y = -0.3067010057;
-    pose.pose.position.z = 0.4037989943 + zOffsetParam_;
+    pose.pose.position.z = 0.4037989943;
     pose.pose.orientation.x = -0.01659836570155305;
     pose.pose.orientation.y = -0.9941145267183089;
     pose.pose.orientation.z = -0.02580021092886362;
@@ -55,6 +55,8 @@ public:
     pose.pose.position.x += offsetX;
     pose.pose.position.y += offsetY;
     pose.pose.position.z += offsetZ;
+    // Apply state-specific z offset AFTER blackboard and yaml overrides so it is not discarded
+    pose.pose.position.z += zOffsetParam_;
     targetPose = pose;
 
     RCLCPP_INFO(

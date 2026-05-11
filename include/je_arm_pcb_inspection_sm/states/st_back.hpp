@@ -37,12 +37,15 @@ struct StBack : smacc2::SmaccState<StBack, SmJeArmPcbInspection>
   {
     configure_orthogonal<OrArm, cl_moveit2z::CbMoveKnownState>(
       "je_arm_pcb_inspection_sm",
-      "config/move_group_client/joint_states/pick_p2.yaml");
+      "config/move_group_client/joint_states/dual_pick_p2.yaml");
   }
 
   void onEntry() 
   { 
     this->requiresComponent(flow_);
+    this->setGlobalSMData(
+      std::string(sm_data::kWorkResumeSubstateId),
+      std::string(sm_data::kWorkSubstatePick));
     flow_->setResumeTarget(sm_data::kBackState);
     RCLCPP_INFO(
       log_utils::bizLogger(),

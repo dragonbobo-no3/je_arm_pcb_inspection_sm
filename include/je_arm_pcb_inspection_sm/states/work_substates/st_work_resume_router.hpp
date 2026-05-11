@@ -7,7 +7,6 @@
 #include "je_arm_pcb_inspection_sm/sm_data.hpp"
 #include "je_arm_pcb_inspection_sm/states/work_substates/st_pick.hpp"
 #include "je_arm_pcb_inspection_sm/states/work_substates/st_inspect.hpp"
-#include "je_arm_pcb_inspection_sm/states/work_substates/st_select_bin.hpp"
 #include "je_arm_pcb_inspection_sm/states/work_substates/st_place.hpp"
 #include "je_arm_pcb_inspection_sm/utils/logging.hpp"
 
@@ -21,7 +20,6 @@ namespace work_substates
 
 struct StPick;
 struct StInspect;
-struct StSelectBin;
 struct StPlace;
 
 struct StWorkResumeRouter : smacc2::SmaccState<StWorkResumeRouter, StWork>
@@ -31,7 +29,6 @@ struct StWorkResumeRouter : smacc2::SmaccState<StWorkResumeRouter, StWork>
   typedef boost::mpl::list<
     smacc2::Transition<EvWorkResumeToPick, StPick>,
     smacc2::Transition<EvWorkResumeToInspect, StInspect>,
-    smacc2::Transition<EvWorkResumeToSelectBin, StSelectBin>,
     smacc2::Transition<EvWorkResumeToPlace, StPlace>
   > reactions;
 
@@ -43,8 +40,10 @@ struct StWorkResumeRouter : smacc2::SmaccState<StWorkResumeRouter, StWork>
     this->getGlobalSMData(std::string(sm_data::kWorkResumeSubstateId), substate);
 
     const bool restorePickSubstate = resumeFromPause && (substate == sm_data::kWorkSubstatePick);
+    const bool restoreInspectSubstate = resumeFromPause && (substate == sm_data::kWorkSubstateInspect);
     const bool restorePlaceSubstate = resumeFromPause && (substate == sm_data::kWorkSubstatePlace);
     this->setGlobalSMData(std::string(sm_data::kPickResumeFromPause), restorePickSubstate);
+    this->setGlobalSMData(std::string(sm_data::kInspectResumeFromPause), restoreInspectSubstate);
     this->setGlobalSMData(std::string(sm_data::kPlaceResumeFromPause), restorePlaceSubstate);
     this->setGlobalSMData(std::string(sm_data::kResumeFromPause), false);
 
@@ -56,10 +55,6 @@ struct StWorkResumeRouter : smacc2::SmaccState<StWorkResumeRouter, StWork>
     if (substate == sm_data::kWorkSubstateInspect)
     {
       this->template postEvent<EvWorkResumeToInspect>();
-    }
-    else if (substate == sm_data::kWorkSubstateSelectBin)
-    {
-      this->template postEvent<EvWorkResumeToSelectBin>();
     }
     else if (substate == sm_data::kWorkSubstatePlace)
     {

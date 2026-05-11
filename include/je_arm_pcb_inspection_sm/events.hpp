@@ -62,8 +62,7 @@ struct EvActivateResumeToP2 : sc::event<EvActivateResumeToP2> {};
 
 // WORK 主干阶段事件
 struct EvPickDone : sc::event<EvPickDone> {};
-struct EvInspectDone : sc::event<EvInspectDone> {};
-struct EvBinSelected : sc::event<EvBinSelected> {};
+struct EvInspectStepAck : sc::event<EvInspectStepAck> {};
 struct EvPlaceDone : sc::event<EvPlaceDone> {};
 
 // PICK 内部阶段事件
@@ -76,8 +75,25 @@ struct EvLifted : sc::event<EvLifted> {};
 // WORK 内部恢复路由事件
 struct EvWorkResumeToPick : sc::event<EvWorkResumeToPick> {};
 struct EvWorkResumeToInspect : sc::event<EvWorkResumeToInspect> {};
-struct EvWorkResumeToSelectBin : sc::event<EvWorkResumeToSelectBin> {};
 struct EvWorkResumeToPlace : sc::event<EvWorkResumeToPlace> {};
+
+// INSPECT 内部恢复路由事件
+struct EvInspectResumeToFrontPose : sc::event<EvInspectResumeToFrontPose> {};
+struct EvInspectResumeToAlignForRightHandover : sc::event<EvInspectResumeToAlignForRightHandover> {};
+struct EvInspectResumeToRightGripperOpenReceive : sc::event<EvInspectResumeToRightGripperOpenReceive> {};
+struct EvInspectResumeToRightApproach : sc::event<EvInspectResumeToRightApproach> {};
+struct EvInspectResumeToRightGripperClose : sc::event<EvInspectResumeToRightGripperClose> {};
+struct EvInspectResumeToLeftGripperOpen : sc::event<EvInspectResumeToLeftGripperOpen> {};
+struct EvInspectResumeToRightRetreat : sc::event<EvInspectResumeToRightRetreat> {};
+struct EvInspectResumeToRightView : sc::event<EvInspectResumeToRightView> {};
+struct EvInspectResumeToAlignForLeftHandover : sc::event<EvInspectResumeToAlignForLeftHandover> {};
+struct EvInspectResumeToLeftGripperOpenReceive : sc::event<EvInspectResumeToLeftGripperOpenReceive> {};
+struct EvInspectResumeToLeftApproach : sc::event<EvInspectResumeToLeftApproach> {};
+struct EvInspectResumeToLeftGripperClose : sc::event<EvInspectResumeToLeftGripperClose> {};
+struct EvInspectResumeToRightGripperOpen : sc::event<EvInspectResumeToRightGripperOpen> {};
+struct EvInspectResumeToLeftRetreat : sc::event<EvInspectResumeToLeftRetreat> {};
+struct EvInspectResumeToReturnWaitPose : sc::event<EvInspectResumeToReturnWaitPose> {};
+struct EvInspectResumeToWaitPlaceResult : sc::event<EvInspectResumeToWaitPlaceResult> {};
 
 // PICK 内部恢复路由事件
 struct EvPickResumeToLPregrasp : sc::event<EvPickResumeToLPregrasp> {};

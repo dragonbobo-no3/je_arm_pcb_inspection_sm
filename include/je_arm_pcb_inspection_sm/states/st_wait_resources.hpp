@@ -19,7 +19,9 @@ struct StWork;
 struct StDelay;
 struct StPause;
 
-/// WAIT_RESOURCES 状态：等待资源就绪（PCB、放置槽位等）
+/// WAIT_RESOURCES 状态：复用的资源等待入口。
+/// - 进入 PICK 前：等待 PCB + 可用 bin
+/// - INSPECT 结束后：等待具体 place target
 struct StWaitResources : smacc2::SmaccState<StWaitResources, SmJeArmPcbInspection>
 {
   using SmaccState::SmaccState;
@@ -35,13 +37,15 @@ struct StWaitResources : smacc2::SmaccState<StWaitResources, SmJeArmPcbInspectio
   void onEntry() 
   { 
     this->requiresComponent(flow_);
+    this->getGlobalSMData(std::string(sm_data::kWorkResumeSubstateId), pendingWorkSubstate_);
     enteredTime_ = std::chrono::steady_clock::now();
     transitionPosted_ = false;
     flow_->setResumeTarget(sm_data::kWaitResourcesState);
     RCLCPP_INFO(
       log_utils::bizLogger(),
-      "[%s] ENTER WAIT_RESOURCES",
-      log_utils::bjtNowString().c_str());
+      "[%s] ENTER WAIT_RESOURCES | pending_work_substate=%s",
+      log_utils::bjtNowString().c_str(),
+      pendingWorkSubstate_.c_str());
 
     auto node = this->getStateMachine().getNode();
     checkTimer_ = node->create_wall_timer(
@@ -102,6 +106,7 @@ private:
   rclcpp::TimerBase::SharedPtr checkTimer_;
   std::chrono::steady_clock::time_point enteredTime_;
   bool transitionPosted_{false};
+  std::string pendingWorkSubstate_{sm_data::kWorkSubstatePick};
 };
 
 }  // namespace je_arm_pcb_inspection_sm

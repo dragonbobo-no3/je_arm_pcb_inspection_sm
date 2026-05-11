@@ -80,10 +80,31 @@ public:
   {
     syncTopicDataToBlackboard();
 
+    std::string workSubstate = sm_data::kWorkSubstatePick;
+    this->getStateMachine()->getGlobalSMData(std::string(sm_data::kWorkResumeSubstateId), workSubstate);
+
+    if (workSubstate == sm_data::kWorkSubstatePlace)
+    {
+      return hasPlaceTargetReady();
+    }
+
+    return hasPickupWorkReady();
+  }
+
+  bool hasPickupWorkReady()
+  {
+
     const bool pcbPresent = getBoolData(sm_data::kPcbPresent, true);
     const bool leftSlotFree = getBoolData(sm_data::kLeftSlotFree, false);
     const bool rightSlotFree = getBoolData(sm_data::kRightSlotFree, true);
     return pcbPresent && (leftSlotFree || rightSlotFree);
+  }
+
+  bool hasPlaceTargetReady()
+  {
+    const bool leftSlotFree = getBoolData(sm_data::kLeftSlotFree, false);
+    const bool rightSlotFree = getBoolData(sm_data::kRightSlotFree, false);
+    return leftSlotFree || rightSlotFree;
   }
 
   void setPcbPresent(bool value)

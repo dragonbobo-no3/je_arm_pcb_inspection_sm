@@ -34,6 +34,7 @@ struct StDelay : smacc2::SmaccState<StDelay, SmJeArmPcbInspection>
   void onEntry()
   {
     transitionPosted_ = false;
+    restoreInnerWorkSubstate_ = false;
 
     this->getGlobalSMData(std::string(sm_data::kResumeStateId), resumeState_);
     this->getGlobalSMData(std::string(sm_data::kSharedDelaySec), delaySec_);
@@ -50,11 +51,19 @@ struct StDelay : smacc2::SmaccState<StDelay, SmJeArmPcbInspection>
     this->getGlobalSMData(std::string(sm_data::kWorkResumeSubstateId), workSubstate);
     if (resumeState_ == sm_data::kWorkState)
     {
+      const std::string currentWorkSubstate = workSubstate;
+
       if (workSubstate == sm_data::kWorkSubstatePick)
       {
         std::string pickNext = sm_data::kPickSubstateLPregrasp;
         this->getGlobalSMData(std::string(sm_data::kPickDelayNextSubstateId), pickNext);
         this->setGlobalSMData(std::string(sm_data::kPickResumeSubstateId), pickNext);
+      }
+      else if (workSubstate == sm_data::kWorkSubstateInspect)
+      {
+        std::string inspectNext = sm_data::kInspectSubstateFrontPose;
+        this->getGlobalSMData(std::string(sm_data::kInspectDelayNextSubstateId), inspectNext);
+        this->setGlobalSMData(std::string(sm_data::kInspectResumeSubstateId), inspectNext);
       }
       else if (workSubstate == sm_data::kWorkSubstatePlace)
       {
@@ -66,6 +75,7 @@ struct StDelay : smacc2::SmaccState<StDelay, SmJeArmPcbInspection>
       std::string workNext = workSubstate;
       this->getGlobalSMData(std::string(sm_data::kWorkDelayNextSubstateId), workNext);
       this->setGlobalSMData(std::string(sm_data::kWorkResumeSubstateId), workNext);
+      restoreInnerWorkSubstate_ = (workNext == currentWorkSubstate);
     }
 
     RCLCPP_INFO(
@@ -122,7 +132,7 @@ private:
     }
     else if (resumeState_ == sm_data::kWorkState)
     {
-      this->setGlobalSMData(std::string(sm_data::kResumeFromPause), true);
+      this->setGlobalSMData(std::string(sm_data::kResumeFromPause), restoreInnerWorkSubstate_);
       this->template postEvent<EvResumeToWork>();
     }
     else if (resumeState_ == sm_data::kBackState)
@@ -139,6 +149,7 @@ private:
   std::string resumeState_{sm_data::kWaitResourcesState};
   double delaySec_{0.6};
   bool transitionPosted_{false};
+  bool restoreInnerWorkSubstate_{false};
 };
 
 }  // namespace je_arm_pcb_inspection_sm
