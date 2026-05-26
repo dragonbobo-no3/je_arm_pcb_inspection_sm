@@ -23,8 +23,7 @@ class CbMoveInspectHandoverJointState : public cl_moveit2z::CbMoveJoints
 public:
   explicit CbMoveInspectHandoverJointState(const std::string & stateKey)
   : stateKey_(stateKey)
-  {
-  }
+  {}
 
   void onEntry() override
   {

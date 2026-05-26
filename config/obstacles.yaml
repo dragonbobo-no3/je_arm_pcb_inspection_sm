@@ -1,0 +1,30 @@
+# Static/dynamic obstacle definitions for MoveIt planning scene.
+# Keep all dimensions in meters and pose in the specified frame.
+# Add more entries under obstacles: [] for future fixtures.
+
+planning_frame: base_link
+
+disabled_collision_links:
+  - Link17
+
+obstacles:
+  - id: conveyor
+    enabled: true
+    type: box
+    frame_id: base_link
+    pose:
+      x: -0.3779
+      y: -0.4641
+      z: 0.3464
+      qx: 0.0
+      qy: 0.0
+      qz: 0.0
+      qw: 1.0
+    size:
+      x: 0.45
+      y: 0.10
+      z: 0.10
+    safety_margin:
+      x: 0.00
+      y: 0.00
+      z: 0.00

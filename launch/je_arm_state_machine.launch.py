@@ -1,6 +1,7 @@
 from launch import LaunchDescription
-from launch.actions import ExecuteProcess, TimerAction
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, TimerAction
 from launch.substitutions import EnvironmentVariable
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
 import os
@@ -16,6 +17,9 @@ def load_yaml(file_path):
 
 
 def generate_launch_description():
+    publish_static_obstacles = LaunchConfiguration("publish_static_obstacles")
+    enable_virtual_grasp_boxes = LaunchConfiguration("enable_virtual_grasp_boxes")
+
     runtime_env = {
         "PYTHONPATH": "",
         "PYTHONHOME": "",
@@ -97,13 +101,19 @@ def generate_launch_description():
     )
 
     sm_node = TimerAction(
-        period=5.0,  # Short delay since move_group is already running
+        period=5.0,  # This launch assumes move_group/control stack is already running elsewhere.
         actions=[
             Node(
                 package="je_arm_pcb_inspection_sm",
                 executable="je_arm_pcb_inspection_sm_node",
                 output="screen",
-                parameters=[moveit_params],
+                parameters=[
+                    moveit_params,
+                    {
+                        "publish_static_obstacles": publish_static_obstacles,
+                        "enable_virtual_grasp_boxes": enable_virtual_grasp_boxes,
+                    },
+                ],
                 arguments=[
                     "--ros-args",
                     "--log-level", "warn",
@@ -118,6 +128,16 @@ def generate_launch_description():
 
     return LaunchDescription(
         [
+            DeclareLaunchArgument(
+                "publish_static_obstacles",
+                default_value="true",
+                description="Whether the SM should publish config/obstacles.yaml into the planning scene",
+            ),
+            DeclareLaunchArgument(
+                "enable_virtual_grasp_boxes",
+                default_value="true",
+                description="Whether the SM should create cl_moveit2z virtual grasp boxes on arm startup",
+            ),
             keyboard_server,
             sm_node,
         ]

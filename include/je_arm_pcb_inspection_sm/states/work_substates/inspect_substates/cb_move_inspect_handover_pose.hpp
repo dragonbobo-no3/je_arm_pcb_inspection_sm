@@ -7,7 +7,7 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <cl_moveit2z/client_behaviors/cb_move_end_effector_linear_seeded.hpp>
+#include <cl_moveit2z/client_behaviors/cb_move_end_effector_seeded.hpp>
 
 #include "je_arm_pcb_inspection_sm/orthogonals/or_arm.hpp"
 #include "je_arm_pcb_inspection_sm/sm_data.hpp"
@@ -20,16 +20,14 @@ namespace work_substates
 namespace inspect_substates
 {
 
-class CbMoveInspectHandoverPose : public cl_moveit2z::CbMoveEndEffectorLinearSeeded
+class CbMoveInspectHandoverPose : public cl_moveit2z::CbMoveEndEffectorSeeded
 {
 public:
   CbMoveInspectHandoverPose(const std::string & offsetKey, const std::string & tipLink)
   : offsetKey_(offsetKey)
   {
     tip_link_ = tipLink;
-    linearStepMeters_ = 0.005;
-    planningTimeSec_ = 1.0;
-    minPathFraction_ = 0.98;
+    planningTimeSec_ = 1.5;
   }
 
   void onEntry() override
@@ -99,7 +97,7 @@ public:
       targetPose.pose.position.y,
       targetPose.pose.position.z);
 
-    CbMoveEndEffectorLinearSeeded::onEntry();
+    CbMoveEndEffectorSeeded::onEntry();
   }
 
 private:

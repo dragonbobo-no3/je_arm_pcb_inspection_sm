@@ -23,7 +23,9 @@ find_package(cl_moveit2z REQUIRED)
 find_package(cl_keyboard REQUIRED)
 find_package(my_robot_arm_cb_library REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(moveit_msgs REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(shape_msgs REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 
@@ -36,7 +38,9 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   cl_keyboard
   my_robot_arm_cb_library
   geometry_msgs
+  moveit_msgs
   rclcpp
+  shape_msgs
   ament_index_cpp
 )
 

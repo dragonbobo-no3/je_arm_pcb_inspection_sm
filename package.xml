@@ -20,8 +20,10 @@
   <depend>cl_keyboard</depend>
   <depend>my_robot_arm_cb_library</depend>
   <depend>geometry_msgs</depend>
+  <depend>moveit_msgs</depend>
   <depend>std_msgs</depend>
   <depend>rclcpp</depend>
+  <depend>shape_msgs</depend>
   <depend>ament_index_cpp</depend>
   <depend>yaml-cpp</depend>
   <exec_depend>rosidl_default_runtime</exec_depend>

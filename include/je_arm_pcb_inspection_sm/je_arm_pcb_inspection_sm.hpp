@@ -16,6 +16,9 @@
 #pragma once
 
 #include <memory>
+
+#include <moveit_msgs/msg/planning_scene.hpp>
+
 #include "rclcpp/rclcpp.hpp"
 #include "smacc2/smacc.hpp"
 
@@ -34,6 +37,7 @@
 #include "je_arm_pcb_inspection_sm/events.hpp"
 #include "je_arm_pcb_inspection_sm/sm_data.hpp"
 #include "je_arm_pcb_inspection_sm/utils/logging.hpp"
+#include "je_arm_pcb_inspection_sm/utils/planning_scene_obstacles.hpp"
 
 using namespace cl_moveit2z;
 using namespace cl_keyboard;
@@ -53,8 +57,14 @@ struct SmJeArmPcbInspection : public smacc2::SmaccStateMachineBase<SmJeArmPcbIns
 {
   using SmaccStateMachineBase::SmaccStateMachineBase;
 
+  je_arm_pcb_inspection_sm::utils::PlanningScenePublisher::SharedPtr planningScenePublisher_;
+
   void onInitialize() override 
   { 
+    auto node = this->getNode();
+    bool publishStaticObstacles = true;
+    node->get_parameter_or("publish_static_obstacles", publishStaticObstacles, true);
+
     this->setGlobalSMData(std::string(sm_data::kResumeStateId), std::string(sm_data::kWaitResourcesState));
     this->setGlobalSMData(std::string(sm_data::kResumeFromPause), false);
     this->setGlobalSMData(std::string(sm_data::kActivateResumeFromPause), false);
@@ -118,12 +128,11 @@ struct SmJeArmPcbInspection : public smacc2::SmaccStateMachineBase<SmJeArmPcbIns
 
         RCLCPP_INFO(
           log_utils::bizLogger(),
-          "[%s] TRANSITION %s --(%s)--> %s | %s",
+          "[%s] TRANSITION %s --(%s)--> %s",
           log_utils::bjtNowString().c_str(),
           source.c_str(),
           event.c_str(),
-          target.c_str(),
-          log_utils::formatArmSnapshot(*this).c_str());
+          target.c_str());
       });
 
     this->createOrthogonal<OrLeftArm>();
@@ -131,6 +140,21 @@ struct SmJeArmPcbInspection : public smacc2::SmaccStateMachineBase<SmJeArmPcbIns
     this->createOrthogonal<OrBothArms>();
     this->createOrthogonal<OrGripper>();
     this->createOrthogonal<OrKeyboard>();
+
+    if (publishStaticObstacles)
+    {
+      if (!je_arm_pcb_inspection_sm::utils::publishPlanningSceneObstacles(
+          node, planningScenePublisher_))
+      {
+        RCLCPP_WARN(
+          node->get_logger(),
+          "State machine started without publishing static planning scene obstacles");
+      }
+    }
+    else
+    {
+      RCLCPP_INFO(node->get_logger(), "Static obstacle publishing disabled by parameter");
+    }
   }
 };
 

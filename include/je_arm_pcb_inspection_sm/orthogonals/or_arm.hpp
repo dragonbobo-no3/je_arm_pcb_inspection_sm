@@ -34,10 +34,20 @@ class OrLeftArm : public smacc2::Orthogonal<OrLeftArm>
 public:
   void onInitialize() override
   {
+    auto node = this->getNode();
+    bool enableVirtualGraspBoxes = true;
+    node->get_parameter_or("enable_virtual_grasp_boxes", enableVirtualGraspBoxes, true);
+
     auto move_group_client = this->createClient<cl_moveit2z::ClMoveit2z>("left_arm");
     move_group_client->createComponent<cl_moveit2z::CpMotionPlanner>();
     move_group_client->createComponent<cl_moveit2z::CpTrajectoryExecutor>();
     move_group_client->createComponent<cl_moveit2z::CpTrajectoryHistory>();
+    if (!enableVirtualGraspBoxes)
+    {
+      RCLCPP_INFO(node->get_logger(), "Skipping left arm virtual grasp box creation");
+      return;
+    }
+
     auto graspingComponent = move_group_client->createComponent<cl_moveit2z::CpGraspingComponent>();
 
     graspingComponent->gripperLink_ = "Link17";
@@ -50,10 +60,20 @@ class OrRightArm : public smacc2::Orthogonal<OrRightArm>
 public:
   void onInitialize() override
   {
+    auto node = this->getNode();
+    bool enableVirtualGraspBoxes = true;
+    node->get_parameter_or("enable_virtual_grasp_boxes", enableVirtualGraspBoxes, true);
+
     auto move_group_client = this->createClient<cl_moveit2z::ClMoveit2z>("right_arm");
     move_group_client->createComponent<cl_moveit2z::CpMotionPlanner>();
     move_group_client->createComponent<cl_moveit2z::CpTrajectoryExecutor>();
     move_group_client->createComponent<cl_moveit2z::CpTrajectoryHistory>();
+    if (!enableVirtualGraspBoxes)
+    {
+      RCLCPP_INFO(node->get_logger(), "Skipping right arm virtual grasp box creation");
+      return;
+    }
+
     auto graspingComponent = move_group_client->createComponent<cl_moveit2z::CpGraspingComponent>();
 
     graspingComponent->gripperLink_ = "Link27";
