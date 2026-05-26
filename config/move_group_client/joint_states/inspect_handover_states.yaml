@@ -1,35 +1,35 @@
 align_for_right_handover:
   joint_states:
-    joint11: -0.2793
-    joint12: -0.7394
-    joint13: 0.0226
-    joint14: -1.2065
-    joint15: -0.0215
-    joint16: -1.1974
-    joint17: -0.2631
-    joint21: -0.2793
-    joint22: -0.7394
-    joint23: 0.0226
-    joint24: -1.2065
-    joint25: -0.0215
-    joint26: -1.1974
-    joint27: 1.3069
+    joint11: -0.3427
+    joint12: -0.9179
+    joint13: -0.0200
+    joint14: -1.2707
+    joint15: -0.0224
+    joint16: -0.9538
+    joint17: 0.2086
+    joint21: -0.3967
+    joint22: -0.7350
+    joint23: -0.0347
+    joint24: -0.8789
+    joint25: -0.0055
+    joint26: -1.5261
+    joint27: -1.8115
   scaling_factor: 0.5
 
 align_for_left_handover:
   joint_states:
-    joint11: -0.2793
-    joint12: -0.7394
-    joint13: 0.0226
-    joint14: -1.2065
-    joint15: -0.0215
-    joint16: -1.1974
-    joint17: -0.2631
-    joint21: -0.2793
-    joint22: -0.7394
-    joint23: 0.0226
-    joint24: -1.2065
-    joint25: -0.0215
-    joint26: -1.1974
-    joint27: 1.3069
+    joint11: -0.3427
+    joint12: -0.9179
+    joint13: -0.0200
+    joint14: -1.2707
+    joint15: -0.0224
+    joint16: -0.9538
+    joint17: 0.2086
+    joint21: -0.3967
+    joint22: -0.7350
+    joint23: -0.0347
+    joint24: -0.8789
+    joint25: -0.0055
+    joint26: -1.5261
+    joint27: -1.8115
   scaling_factor: 0.5
