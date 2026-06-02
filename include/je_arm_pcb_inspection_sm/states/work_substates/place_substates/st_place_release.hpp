@@ -50,7 +50,8 @@ struct StPlaceGripperOpen : smacc2::SmaccState<StPlaceGripperOpen, StPlace>
       "/joint_states_double_arm",
       0.03,
       cfg.command,
-      cfg.torque);
+      cfg.torque,
+      cfg.waitForFeedback);
   }
 
   void onEntry()

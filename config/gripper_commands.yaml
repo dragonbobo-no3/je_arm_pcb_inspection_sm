@@ -3,6 +3,7 @@ gripper_common:
   topic: "/end_effector_cmd_lr"
   left_valid: true
   right_valid: false
+  wait_for_feedback: true
 
 gripper_commands:
   pick_open:

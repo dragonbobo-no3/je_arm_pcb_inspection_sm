@@ -22,6 +22,7 @@ struct GripperCommandConfig
   bool forcePositionMode{true};
   bool leftValid{true};
   bool rightValid{false};
+  bool waitForFeedback{true};
   std::string topic{"/end_effector_cmd_lr"};
   std::string sourcePath;
   bool loaded{false};
@@ -30,7 +31,7 @@ struct GripperCommandConfig
 inline GripperCommandConfig defaultGripperCommandConfig(const std::string & commandName)
 {
   GripperCommandConfig cfg;
-  if (commandName == "pick_open" || commandName == "place_open")
+  if (commandName.find("_open") != std::string::npos)
   {
     cfg.position = 1.0;
   }
@@ -106,6 +107,10 @@ inline GripperCommandConfig loadGripperCommandConfig(const std::string & command
       {
         cfg.rightValid = common["right_valid"].as<bool>();
       }
+      if (common["wait_for_feedback"])
+      {
+        cfg.waitForFeedback = common["wait_for_feedback"].as<bool>();
+      }
     }
 
     if (command)
@@ -138,6 +143,10 @@ inline GripperCommandConfig loadGripperCommandConfig(const std::string & command
       if (command["right_valid"])
       {
         cfg.rightValid = command["right_valid"].as<bool>();
+      }
+      if (command["wait_for_feedback"])
+      {
+        cfg.waitForFeedback = command["wait_for_feedback"].as<bool>();
       }
     }
 

@@ -1,17 +1,17 @@
 #pragma once
 
+#include <chrono>
+#include <cmath>
+#include <memory>
 #include <smacc2/smacc.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <chrono>
-#include <thread>
 
-#include <cl_moveit2z/client_behaviors/cb_ctrl_gripper.hpp>
+#include <common/msg/oculus_init_joint_state.hpp>
 #include <je_software/msg/end_effector_command_lr.hpp>
 
 #include "je_arm_pcb_inspection_sm/events.hpp"
 #include "je_arm_pcb_inspection_sm/orthogonals/or_arm.hpp"
 #include "je_arm_pcb_inspection_sm/sm_data.hpp"
-#include "je_arm_pcb_inspection_sm/utils/gripper_command_loader.hpp"
 #include "je_arm_pcb_inspection_sm/utils/test_gripper_config_loader.hpp"
 #include "je_arm_pcb_inspection_sm/utils/logging.hpp"
 
@@ -29,120 +29,244 @@ struct StTestGripper : smacc2::SmaccState<StTestGripper, SmJeArmPcbInspection>
   using SmaccState::SmaccState;
 
   typedef boost::mpl::list<
-    smacc2::Transition<smacc2::EvCbSuccess<cl_moveit2z::CbCtrlGripper, OrGripper>, StIdle>,
-    smacc2::Transition<smacc2::EvCbFailure<cl_moveit2z::CbCtrlGripper, OrGripper>, StPause>,
     smacc2::Transition<EvGripperClosed, StIdle>,
     smacc2::Transition<EvPauseRequested, StPause>
   > reactions;
 
-  static void staticConfigure()
-  {
-    // 使用 YAML 默认值配置，实际参数在 onEntry 时从 test_gripper.yaml 读取
-    configure_orthogonal<OrGripper, cl_moveit2z::CbCtrlGripper>(
-      je_software::msg::EndEffectorCommand::MODE_POSITION,  // 默认模式
-      0.0,                                                   // 默认位置（关闭）
-      0,                                                     // 默认 preset
-      true,                                                  // 默认左手有效
-      false,                                                 // 默认右手无效
-      "/end_effector_cmd_lr");                             // 默认 topic
-  }
+  static void staticConfigure() {}
 
   void onEntry()
   {
-    // 从 config/test_gripper.yaml 加载直接的夹爪参数
-    const auto cfg = je_arm_pcb_inspection_sm::utils::loadTestGripperConfig();
-    
+    config_ = je_arm_pcb_inspection_sm::utils::loadTestGripperConfig();
+    current_step_index_ = 0;
+    step_completed_ = false;
+    command_completed_ = false;
+
     RCLCPP_INFO(
       log_utils::bizLogger(),
-      "[%s] ENTER TEST_GRIPPER - config loaded from test_gripper.yaml | "
-      "mode=%d, position=%.2f, preset=%d, command=%s, torque=%.2f, left=%d, right=%d, topic='%s', timeout=%.2fs [bypass: 'n']",
+      "[%s] ENTER TEST_GRIPPER - loaded %zu test step(s) from test_gripper.yaml | wait_feedback=%d, topic='%s', feedback_topic='%s', tol=%.3f [bypass: 'n']",
       log_utils::bjtNowString().c_str(),
-      cfg.mode,
-      cfg.position,
-      cfg.preset,
-      cfg.command.c_str(),
-      cfg.torque,
-      cfg.leftValid,
-      cfg.rightValid,
-      cfg.topic.c_str(),
-      cfg.timeoutSec);
+      config_.steps.size(),
+      config_.waitForFeedback,
+      config_.topic.c_str(),
+      config_.feedbackTopic.c_str(),
+      config_.positionTolerance);
 
-    // 如果有延迟，先等待
-    if (cfg.delayBeforeSec > 0.0)
+    if (config_.delayBeforeSec > 0.0)
     {
-      RCLCPP_INFO(
+      RCLCPP_WARN(
         log_utils::bizLogger(),
-        "[%s] Waiting %.2fs before gripper execution",
+        "[%s] TEST_GRIPPER delay_before_sec=%.2f is ignored because the test sequence starts immediately on state entry.",
         log_utils::bjtNowString().c_str(),
-        cfg.delayBeforeSec);
-      std::this_thread::sleep_for(std::chrono::duration<double>(cfg.delayBeforeSec));
+        config_.delayBeforeSec);
     }
 
-    try
+    if (!publisher_)
     {
-      // 直接发送夹爪命令到话题
-      auto publisher = getNode()->create_publisher<je_software::msg::EndEffectorCommandLR>(
-        cfg.topic, rclcpp::QoS(10).reliable());
-
-      je_software::msg::EndEffectorCommandLR cmd_lr;
-      je_software::msg::EndEffectorCommand cmd;
-      cmd.mode = cfg.mode;
-      cmd.position = cfg.position;
-      cmd.preset = cfg.preset;
-      cmd.command = cfg.command;
-      cmd.torque = cfg.torque;
-
-      cmd_lr.left_valid = cfg.leftValid;
-      cmd_lr.right_valid = cfg.rightValid;
-      cmd_lr.left = cmd;
-      cmd_lr.right = cmd;
-
-      RCLCPP_INFO(
-        log_utils::bizLogger(),
-        "[%s] Publishing gripper command: mode=%d, position=%.2f, preset=%d, command=%s, torque=%.2f, left=%d, right=%d to '%s'",
-        log_utils::bjtNowString().c_str(),
-        cfg.mode,
-        cfg.position,
-        cfg.preset,
-        cfg.command.c_str(),
-        cfg.torque,
-        cfg.leftValid,
-        cfg.rightValid,
-        cfg.topic.c_str());
-
-      publisher->publish(cmd_lr);
-
-      // 等待一段时间让命令执行
-      std::this_thread::sleep_for(std::chrono::seconds(1));
-
-      RCLCPP_INFO(
-        log_utils::bizLogger(),
-        "[%s] Gripper command executed successfully",
-        log_utils::bjtNowString().c_str());
-
-      // 发送成功事件
-      this->postEvent(new smacc2::EvCbSuccess<cl_moveit2z::CbCtrlGripper, OrGripper>());
+      publisher_ = getNode()->create_publisher<je_software::msg::EndEffectorCommandLR>(
+        config_.topic,
+        rclcpp::QoS(10).reliable());
     }
-    catch (const std::exception & e)
+
+    if (!feedback_sub_)
     {
-      RCLCPP_ERROR(
-        log_utils::bizLogger(),
-        "[%s] Failed to execute gripper command: %s",
-        log_utils::bjtNowString().c_str(),
-        e.what());
-
-      // 发送失败事件
-      this->postEvent(new smacc2::EvCbFailure<cl_moveit2z::CbCtrlGripper, OrGripper>());
+      feedback_sub_ = getNode()->create_subscription<common::msg::OculusInitJointState>(
+        config_.feedbackTopic,
+        rclcpp::QoS(10).reliable(),
+        [this](const common::msg::OculusInitJointState::SharedPtr msg)
+        {
+          onFeedback(msg);
+        });
     }
+
+    if (!watchdog_timer_)
+    {
+      watchdog_timer_ = getNode()->create_wall_timer(
+        std::chrono::milliseconds(50),
+        [this]()
+        {
+          onWatchdogTick();
+        });
+    }
+
+    dispatchCurrentStep();
   }
 
   void onExit()
   {
+    command_completed_ = true;
+    step_completed_ = true;
+    if (watchdog_timer_)
+    {
+      watchdog_timer_->cancel();
+      watchdog_timer_.reset();
+    }
+    feedback_sub_.reset();
+    publisher_.reset();
+
     RCLCPP_INFO(
       log_utils::bizLogger(),
       "[%s] EXIT TEST_GRIPPER",
       log_utils::bjtNowString().c_str());
   }
+
+private:
+  void dispatchCurrentStep()
+  {
+    if (current_step_index_ >= config_.steps.size())
+    {
+      command_completed_ = true;
+      this->template postEvent<EvGripperClosed>();
+      return;
+    }
+
+    const auto & step = config_.steps[current_step_index_];
+    if (!step.leftValid && !step.rightValid)
+    {
+      RCLCPP_WARN(
+        log_utils::bizLogger(),
+        "[%s] TEST_GRIPPER step[%zu] '%s' has neither left nor right enabled",
+        log_utils::bjtNowString().c_str(),
+        current_step_index_,
+        step.name.c_str());
+      this->template postEvent<EvPauseRequested>();
+      return;
+    }
+
+    je_software::msg::EndEffectorCommandLR msg;
+    msg.left_valid = step.leftValid;
+    msg.right_valid = step.rightValid;
+
+    auto fill_command = [&](je_software::msg::EndEffectorCommand & command)
+    {
+      command.mode = step.mode;
+      command.position = step.position;
+      command.preset = step.preset;
+      command.command = step.command;
+      command.torque = step.torque;
+    };
+
+    if (step.leftValid)
+    {
+      fill_command(msg.left);
+    }
+    if (step.rightValid)
+    {
+      fill_command(msg.right);
+    }
+
+    publisher_->publish(msg);
+    step_started_at_ = getNode()->now();
+    step_completed_ = false;
+
+    RCLCPP_INFO(
+      log_utils::bizLogger(),
+      "[%s] TEST_GRIPPER step[%zu/%zu] '%s' dispatched | mode=%d pos=%.3f preset=%d command=%s torque=%.3f left=%d right=%d hold=%.2fs timeout=%.2fs",
+      log_utils::bjtNowString().c_str(),
+      current_step_index_ + 1,
+      config_.steps.size(),
+      step.name.c_str(),
+      step.mode,
+      step.position,
+      step.preset,
+      step.command.c_str(),
+      step.torque,
+      step.leftValid,
+      step.rightValid,
+        step.minDurationSec,
+      step.timeoutSec);
+  }
+
+  void onFeedback(const common::msg::OculusInitJointState::SharedPtr msg)
+  {
+    if (!msg || command_completed_ || step_completed_ || current_step_index_ >= config_.steps.size())
+    {
+      return;
+    }
+
+    const auto & step = config_.steps[current_step_index_];
+    const auto elapsed = (getNode()->now() - step_started_at_).seconds();
+    const bool leftOk = !step.leftValid || (msg->left_valid && isTargetReached(step, msg->left_gripper));
+    const bool rightOk = !step.rightValid || (msg->right_valid && isTargetReached(step, msg->right_gripper));
+
+    if (leftOk && rightOk && elapsed >= step.minDurationSec)
+    {
+      RCLCPP_INFO(
+        log_utils::bizLogger(),
+        "[%s] TEST_GRIPPER step[%zu/%zu] '%s' reached target after %.2fs | left=%.4f right=%.4f",
+        log_utils::bjtNowString().c_str(),
+        current_step_index_ + 1,
+        config_.steps.size(),
+        step.name.c_str(),
+        elapsed,
+        msg->left_gripper,
+        msg->right_gripper);
+
+      step_completed_ = true;
+      ++current_step_index_;
+      dispatchCurrentStep();
+    }
+  }
+
+  void onWatchdogTick()
+  {
+    if (command_completed_ || step_completed_ || current_step_index_ >= config_.steps.size())
+    {
+      return;
+    }
+
+    const auto & step = config_.steps[current_step_index_];
+    const auto elapsed = (getNode()->now() - step_started_at_).seconds();
+    if (elapsed <= step.timeoutSec)
+    {
+      return;
+    }
+
+    if (!config_.waitForFeedback || step.mode == je_software::msg::EndEffectorCommand::MODE_PRESET)
+    {
+      RCLCPP_WARN(
+        log_utils::bizLogger(),
+        "[%s] TEST_GRIPPER step[%zu/%zu] '%s' timed out after %.2fs; treating as success fallback",
+        log_utils::bjtNowString().c_str(),
+        current_step_index_ + 1,
+        config_.steps.size(),
+        step.name.c_str(),
+        elapsed);
+      step_completed_ = true;
+      ++current_step_index_;
+      dispatchCurrentStep();
+      return;
+    }
+
+    RCLCPP_WARN(
+      log_utils::bizLogger(),
+      "[%s] TEST_GRIPPER step[%zu/%zu] '%s' timed out after %.2fs; posting pause",
+      log_utils::bjtNowString().c_str(),
+      current_step_index_ + 1,
+      config_.steps.size(),
+      step.name.c_str(),
+      elapsed);
+    command_completed_ = true;
+    this->template postEvent<EvPauseRequested>();
+  }
+
+  bool isTargetReached(const utils::TestGripperStep & step, double feedbackValue) const
+  {
+    if (step.mode == je_software::msg::EndEffectorCommand::MODE_POSITION)
+    {
+      return std::fabs(feedbackValue - step.position) <= config_.positionTolerance;
+    }
+    return std::isfinite(feedbackValue);
+  }
+
+  utils::TestGripperConfig config_;
+  size_t current_step_index_{0};
+  bool step_completed_{false};
+  bool command_completed_{false};
+  rclcpp::Time step_started_at_{0, 0, RCL_ROS_TIME};
+  rclcpp::Publisher<je_software::msg::EndEffectorCommandLR>::SharedPtr publisher_;
+  rclcpp::Subscription<common::msg::OculusInitJointState>::SharedPtr feedback_sub_;
+  rclcpp::TimerBase::SharedPtr watchdog_timer_;
 };
 
 }  // namespace je_arm_pcb_inspection_sm

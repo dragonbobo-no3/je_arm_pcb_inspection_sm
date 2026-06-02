@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <string>
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
@@ -14,6 +15,20 @@ namespace je_arm_pcb_inspection_sm
 namespace utils
 {
 
+struct TestGripperStep
+{
+  std::string name;
+  int mode{je_software::msg::EndEffectorCommand::MODE_POSITION};
+  double position{0.0};
+  int preset{0};
+  std::string command;
+  double torque{0.0};
+  bool leftValid{true};
+  bool rightValid{false};
+  double minDurationSec{1.0};
+  double timeoutSec{5.0};
+};
+
 struct TestGripperConfig
 {
   // 夹爪控制参数
@@ -24,16 +39,37 @@ struct TestGripperConfig
   double torque{0.0};
   bool leftValid{true};
   bool rightValid{false};
+  bool waitForFeedback{false};
   std::string topic{"/end_effector_cmd_lr"};
+  std::string feedbackTopic{"/joint_states_double_arm"};
+  double positionTolerance{0.03};
   
   // 执行参数
   double delayBeforeSec{0.0};
   double timeoutSec{5.0};
+  double stepHoldSec{1.0};
   std::string logLevel{"INFO"};
+  std::vector<TestGripperStep> steps;
   
   std::string sourcePath;
   bool loaded{false};
 };
+
+inline TestGripperStep makeTestGripperStepFromConfig(const TestGripperConfig & cfg)
+{
+  TestGripperStep step;
+  step.name = "single_step";
+  step.mode = cfg.mode;
+  step.position = cfg.position;
+  step.preset = cfg.preset;
+  step.command = cfg.command;
+  step.torque = cfg.torque;
+  step.leftValid = cfg.leftValid;
+  step.rightValid = cfg.rightValid;
+  step.minDurationSec = cfg.stepHoldSec;
+  step.timeoutSec = cfg.timeoutSec;
+  return step;
+}
 
 inline TestGripperConfig loadTestGripperConfig()
 {
@@ -82,10 +118,25 @@ inline TestGripperConfig loadTestGripperConfig()
       {
         cfg.rightValid = testGripper["right_valid"].as<bool>();
       }
+
+      if (testGripper["wait_for_feedback"])
+      {
+        cfg.waitForFeedback = testGripper["wait_for_feedback"].as<bool>();
+      }
       
       if (testGripper["topic"])
       {
         cfg.topic = testGripper["topic"].as<std::string>();
+      }
+
+      if (testGripper["feedback_topic"])
+      {
+        cfg.feedbackTopic = testGripper["feedback_topic"].as<std::string>();
+      }
+
+      if (testGripper["position_tolerance"])
+      {
+        cfg.positionTolerance = testGripper["position_tolerance"].as<double>();
       }
       
       // 执行参数
@@ -98,10 +149,70 @@ inline TestGripperConfig loadTestGripperConfig()
       {
         cfg.timeoutSec = testGripper["timeout_sec"].as<double>();
       }
+
+      if (testGripper["step_hold_sec"])
+      {
+        cfg.stepHoldSec = testGripper["step_hold_sec"].as<double>();
+      }
       
       if (testGripper["log_level"])
       {
         cfg.logLevel = testGripper["log_level"].as<std::string>();
+      }
+
+      const YAML::Node steps = testGripper["steps"];
+      if (steps && steps.IsSequence())
+      {
+        for (const auto & stepNode : steps)
+        {
+          TestGripperStep step = makeTestGripperStepFromConfig(cfg);
+
+          if (stepNode["name"])
+          {
+            step.name = stepNode["name"].as<std::string>();
+          }
+          step.mode = parseGripperMode(stepNode["mode"], step.mode);
+
+          if (stepNode["position"])
+          {
+            step.position = stepNode["position"].as<double>();
+          }
+          if (stepNode["preset"])
+          {
+            step.preset = stepNode["preset"].as<int>();
+          }
+          if (stepNode["command"])
+          {
+            step.command = stepNode["command"].as<std::string>();
+          }
+          if (stepNode["torque"])
+          {
+            step.torque = stepNode["torque"].as<double>();
+          }
+          if (stepNode["left_valid"])
+          {
+            step.leftValid = stepNode["left_valid"].as<bool>();
+          }
+          if (stepNode["right_valid"])
+          {
+            step.rightValid = stepNode["right_valid"].as<bool>();
+          }
+          if (stepNode["timeout_sec"])
+          {
+            step.timeoutSec = stepNode["timeout_sec"].as<double>();
+          }
+          if (stepNode["min_duration_sec"])
+          {
+            step.minDurationSec = stepNode["min_duration_sec"].as<double>();
+          }
+
+          cfg.steps.push_back(step);
+        }
+      }
+
+      if (cfg.steps.empty())
+      {
+        cfg.steps.push_back(makeTestGripperStepFromConfig(cfg));
       }
 
       cfg.loaded = true;
