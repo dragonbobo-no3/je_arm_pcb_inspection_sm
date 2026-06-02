@@ -13,9 +13,11 @@
 #include <yaml-cpp/yaml.h>
 
 #include <cl_keyboard/components/cp_keyboard_listener_1.hpp>
+#include <cl_moveit2z/cl_moveit2z.hpp>
 #include <cl_moveit2z/components/cp_trajectory_executor.hpp>
 
 #include "je_arm_pcb_inspection_sm/events.hpp"
+#include "je_arm_pcb_inspection_sm/orthogonals/or_arm.hpp"
 #include "je_arm_pcb_inspection_sm/sm_data.hpp"
 #include "je_arm_pcb_inspection_sm/utils/logging.hpp"
 
@@ -153,12 +155,7 @@ public:
     {
       if (key == 'p')
       {
-        cl_moveit2z::CpTrajectoryExecutor * trajectoryExecutor = nullptr;
-        this->requiresComponent(trajectoryExecutor, false);
-        if (trajectoryExecutor != nullptr)
-        {
-          trajectoryExecutor->cancel();
-        }
+        cancelTrajectoryExecutorIfAvailable();
 
         (void)tryPostPauseRequested(true);
       }
@@ -255,6 +252,7 @@ public:
       }
       else if (key == 'p')
       {
+        cancelTrajectoryExecutorIfAvailable();
         (void)tryPostPauseRequested(false);
       }
       else if (key == 'u')
@@ -272,12 +270,7 @@ public:
     {
       if (key == 'p')
       {
-        cl_moveit2z::CpTrajectoryExecutor * trajectoryExecutor = nullptr;
-        this->requiresComponent(trajectoryExecutor, false);
-        if (trajectoryExecutor != nullptr)
-        {
-          trajectoryExecutor->cancel();
-        }
+        cancelTrajectoryExecutorIfAvailable();
       }
       else if (key == 'u')
       {
@@ -327,6 +320,50 @@ public:
   }
 
 private:
+  template <typename TOrthogonal>
+  void stopMoveGroupForOrthogonalIfAvailable()
+  {
+    auto * stateMachine = this->getStateMachine();
+    if (stateMachine == nullptr)
+    {
+      return;
+    }
+
+    auto * orthogonal = stateMachine->template getOrthogonal<TOrthogonal>();
+    if (orthogonal == nullptr)
+    {
+      return;
+    }
+
+    cl_moveit2z::ClMoveit2z * moveitClient = nullptr;
+    if (!orthogonal->requiresClient(moveitClient) || moveitClient == nullptr ||
+      moveitClient->moveGroupClientInterface == nullptr)
+    {
+      return;
+    }
+
+    try
+    {
+      moveitClient->moveGroupClientInterface->stop();
+    }
+    catch (const std::exception & e)
+    {
+      RCLCPP_WARN(
+        getLogger(),
+        "Failed to stop MoveIt client for pause request: %s",
+        e.what());
+    }
+  }
+
+  void cancelTrajectoryExecutorIfAvailable()
+  {
+    // Pause must stop whichever MoveIt client is active; this component lives on the
+    // keyboard orthogonal, so local requiresComponent() cannot see arm executors.
+    stopMoveGroupForOrthogonalIfAvailable<OrBothArms>();
+    stopMoveGroupForOrthogonalIfAvailable<OrLeftArm>();
+    stopMoveGroupForOrthogonalIfAvailable<OrRightArm>();
+  }
+
   bool isPauseDebounced()
   {
     const auto now = std::chrono::steady_clock::now();

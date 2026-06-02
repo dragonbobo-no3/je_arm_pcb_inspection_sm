@@ -9,13 +9,13 @@ disabled_collision_links:
 
 obstacles:
   - id: conveyor
-    enabled: true
+    enabled: false
     type: box
     frame_id: base_link
     pose:
-      x: -0.3779
-      y: -0.4641
-      z: 0.3464
+      x: -0.2951
+      y: -0.5098
+      z: 0.4524
       qx: 0.0
       qy: 0.0
       qz: 0.0
@@ -25,6 +25,6 @@ obstacles:
       y: 0.10
       z: 0.10
     safety_margin:
-      x: 0.00
-      y: 0.00
-      z: 0.00
+      x: 0.01
+      y: 0.01
+      z: 0.01
