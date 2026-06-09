@@ -19,6 +19,9 @@ def load_yaml(file_path):
 def generate_launch_description():
     publish_static_obstacles = LaunchConfiguration("publish_static_obstacles")
     enable_virtual_grasp_boxes = LaunchConfiguration("enable_virtual_grasp_boxes")
+    pcb_detection_topic = LaunchConfiguration("pcb_detection_topic")
+    place_slot_topic = LaunchConfiguration("place_slot_topic")
+    inspect_done_topic = LaunchConfiguration("inspect_done_topic")
 
     runtime_env = {
         "PYTHONPATH": "",
@@ -112,6 +115,9 @@ def generate_launch_description():
                     {
                         "publish_static_obstacles": publish_static_obstacles,
                         "enable_virtual_grasp_boxes": enable_virtual_grasp_boxes,
+                        "pcb_detection_topic": pcb_detection_topic,
+                        "place_slot_topic": place_slot_topic,
+                        "inspect_done_topic": inspect_done_topic,
                     },
                 ],
                 arguments=[
@@ -137,6 +143,21 @@ def generate_launch_description():
                 "enable_virtual_grasp_boxes",
                 default_value="true",
                 description="Whether the SM should create cl_moveit2z virtual grasp boxes on arm startup",
+            ),
+            DeclareLaunchArgument(
+                "pcb_detection_topic",
+                default_value="/pcb_detection",
+                description="Topic for incoming PCB detection messages",
+            ),
+            DeclareLaunchArgument(
+                "place_slot_topic",
+                default_value="/recommended_slot",
+                description="Topic for incoming place-slot detection messages",
+            ),
+            DeclareLaunchArgument(
+                "inspect_done_topic",
+                default_value="/vision/inspect_done",
+                description="Topic for inspect-done acknowledgements",
             ),
             keyboard_server,
             sm_node,

@@ -1,12 +1,12 @@
 #pragma once
 
 #include <cmath>
+#include <common/msg/pcb_detection.hpp>
+#include <common/msg/place_slot.hpp>
 #include <mutex>
 #include <string>
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
-#include <je_arm_pcb_inspection_sm/msg/pcb_detection.hpp>
-#include <je_arm_pcb_inspection_sm/msg/place_slot.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <smacc2/smacc.hpp>
 
@@ -25,11 +25,12 @@ public:
   void onComponentInitialization()
   {
     auto node = this->getNode();
+    loadTopicNames(node);
 
-    pcbDetectionSub_ = node->create_subscription<je_arm_pcb_inspection_sm::msg::PcbDetection>(
+    pcbDetectionSub_ = node->create_subscription<common::msg::PcbDetection>(
       pcbDetectionTopic_,
       rclcpp::QoS(10),
-      [this](const je_arm_pcb_inspection_sm::msg::PcbDetection::SharedPtr msg)
+      [this](const common::msg::PcbDetection::SharedPtr msg)
       {
         std::scoped_lock<std::mutex> lock(dataMutex_);
         if (msg->present && isPoseValid(msg->pose.pose))
@@ -43,10 +44,10 @@ public:
         }
       });
 
-    placeSlotSub_ = node->create_subscription<je_arm_pcb_inspection_sm::msg::PlaceSlot>(
+    placeSlotSub_ = node->create_subscription<common::msg::PlaceSlot>(
       placeSlotTopic_,
       rclcpp::QoS(10),
-      [this](const je_arm_pcb_inspection_sm::msg::PlaceSlot::SharedPtr msg)
+      [this](const common::msg::PlaceSlot::SharedPtr msg)
       {
         std::scoped_lock<std::mutex> lock(dataMutex_);
         hasPlaceSlotUpdate_ = true;
@@ -128,6 +129,22 @@ public:
   }
 
 private:
+  void loadTopicNames(const rclcpp::Node::SharedPtr & node)
+  {
+    if (!node->has_parameter("pcb_detection_topic"))
+    {
+      node->declare_parameter<std::string>("pcb_detection_topic", "/pcb_detection");
+    }
+
+    if (!node->has_parameter("place_slot_topic"))
+    {
+      node->declare_parameter<std::string>("place_slot_topic", "/vision/place_slot_detection");
+    }
+
+    pcbDetectionTopic_ = node->get_parameter("pcb_detection_topic").as_string();
+    placeSlotTopic_ = node->get_parameter("place_slot_topic").as_string();
+  }
+
   void syncTopicDataToBlackboard()
   {
     std::scoped_lock<std::mutex> lock(dataMutex_);
@@ -222,11 +239,11 @@ private:
   bool hasFreePlaceSlot_{false};
   geometry_msgs::msg::PoseStamped latestPlacePose_;
 
-  std::string pcbDetectionTopic_{"/vision/pcb_detection"};
+  std::string pcbDetectionTopic_{"/pcb_detection"};
   std::string placeSlotTopic_{"/vision/place_slot_detection"};
 
-  rclcpp::Subscription<je_arm_pcb_inspection_sm::msg::PcbDetection>::SharedPtr pcbDetectionSub_;
-  rclcpp::Subscription<je_arm_pcb_inspection_sm::msg::PlaceSlot>::SharedPtr placeSlotSub_;
+  rclcpp::Subscription<common::msg::PcbDetection>::SharedPtr pcbDetectionSub_;
+  rclcpp::Subscription<common::msg::PlaceSlot>::SharedPtr placeSlotSub_;
 };
 
 }  // namespace je_arm_pcb_inspection_sm

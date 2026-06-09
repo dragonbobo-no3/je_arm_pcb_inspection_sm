@@ -9,7 +9,6 @@
   <license>MyLicense</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
   <depend>libboost-thread-dev</depend>
 
@@ -18,6 +17,7 @@
   <depend>cl_moveit2z</depend>
   <depend>my_jearm_moveit_config</depend>
   <depend>cl_keyboard</depend>
+  <depend>common</depend>
   <depend>my_robot_arm_cb_library</depend>
   <depend>geometry_msgs</depend>
   <depend>moveit_msgs</depend>
@@ -26,8 +26,6 @@
   <depend>shape_msgs</depend>
   <depend>ament_index_cpp</depend>
   <depend>yaml-cpp</depend>
-  <exec_depend>rosidl_default_runtime</exec_depend>
-  <member_of_group>rosidl_interface_packages</member_of_group>
   <export>
     <build_type>ament_cmake</build_type>
   </export>

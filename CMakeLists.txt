@@ -13,7 +13,7 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(ament_index_cpp REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
+find_package(common REQUIRED)
 find_package(cl_ros2_timer REQUIRED)
 find_package(smacc2 REQUIRED)
 find_package(smacc2_msgs REQUIRED)
@@ -36,18 +36,13 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   std_msgs
   cl_moveit2z
   cl_keyboard
+  common
   my_robot_arm_cb_library
   geometry_msgs
   moveit_msgs
   rclcpp
   shape_msgs
   ament_index_cpp
-)
-
-rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/PcbDetection.msg"
-  "msg/PlaceSlot.msg"
-  DEPENDENCIES std_msgs geometry_msgs
 )
 
 include_directories(
@@ -70,10 +65,6 @@ target_link_libraries(${PROJECT_NAME}_node
 
 ament_target_dependencies(${PROJECT_NAME}_node ${THIS_PACKAGE_INCLUDE_DEPENDS})
 
-add_dependencies(${PROJECT_NAME}_node ${PROJECT_NAME}__rosidl_generator_cpp)
-rosidl_target_interfaces(${PROJECT_NAME}_node
-  ${PROJECT_NAME} "rosidl_typesupport_cpp")
-
 install(
   DIRECTORY include/
   DESTINATION include
@@ -91,7 +82,5 @@ install(TARGETS
   ${PROJECT_NAME}_node
   DESTINATION lib/${PROJECT_NAME}
 )
-
-ament_export_dependencies(rosidl_default_runtime)
 
 ament_package()
